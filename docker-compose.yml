@@ -1,0 +1,40 @@
+services:
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build: ./backend
+    depends_on:
+      - mongo
+    ports:
+      - "5000:5000"
+    environment:
+      PORT: 5000
+      MONGO_URI: mongodb://mongo:27017/lankalink
+      CLIENT_URL: http://localhost:5173
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ./backend:/app
+      # Keep the container's Linux node_modules instead of the host's
+      - /app/node_modules
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_PROXY_TARGET: http://backend:5000
+      VITE_USE_POLLING: "true"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  mongo-data:
