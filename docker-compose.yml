@@ -17,6 +17,8 @@ services:
       PORT: 5000
       MONGO_URI: mongodb://mongo:27017/lankalink
       CLIENT_URL: http://localhost:5173
+      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me}
+      JWT_EXPIRES_IN: 7d
       CHOKIDAR_USEPOLLING: "true"
     volumes:
       - ./backend:/app
