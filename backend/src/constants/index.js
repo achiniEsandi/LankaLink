@@ -11,6 +11,16 @@ export const SERVICE_TYPES = [
   'errand_assistance',
 ];
 
+export const SERVICE_LABELS = {
+  property_inspection: 'Property Inspection',
+  house_cleaning: 'House Cleaning',
+  garden_maintenance: 'Garden Maintenance',
+  minor_repairs: 'Minor Repairs & Maintenance',
+  pet_care: 'Pet Care',
+  family_welfare_visit: 'Non-medical Family Welfare Visits',
+  errand_assistance: 'Errand Assistance',
+};
+
 export const DISTRICTS = [
   'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo', 'Galle', 'Gampaha',
   'Hambantota', 'Jaffna', 'Kalutara', 'Kandy', 'Kegalle', 'Kilinochchi', 'Kurunegala',

@@ -38,6 +38,17 @@ beforeEach(async () => {
   await Promise.all([User.deleteMany({}), Provider.deleteMany({})]);
 });
 
+describe('GET /api/providers/options', () => {
+  it('lists every service with a label and all 25 districts', async () => {
+    const res = await request(app).get('/api/providers/options');
+
+    assert.equal(res.status, 200);
+    assert.equal(res.body.services.length, 7);
+    assert.ok(res.body.services.every((s) => s.value && s.label));
+    assert.equal(res.body.districts.length, 25);
+  });
+});
+
 describe('POST /api/providers/register', () => {
   it('creates a pending provider and returns a token', async () => {
     const res = await request(app).post('/api/providers/register').send(validProvider);
