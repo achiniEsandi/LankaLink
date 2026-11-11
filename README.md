@@ -39,6 +39,14 @@ docker compose up --build
 | Backend API | http://localhost:5000/api/health |
 | MongoDB | mongodb://localhost:27017/lankalink |
 
+If port 5000 or 5173 is already used by another project, pick other host ports:
+
+```bash
+BACKEND_PORT=5050 FRONTEND_PORT=5174 docker compose up --build
+```
+
+(PowerShell: `$env:BACKEND_PORT=5050; $env:FRONTEND_PORT=5174; docker compose up --build`)
+
 Code changes in `frontend/` and `backend/` reload automatically. After adding or removing an npm package, rebuild with `docker compose up --build -V`.
 
 ### Option 2 — Run locally with Node
