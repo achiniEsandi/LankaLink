@@ -16,6 +16,26 @@
   --error-soft: #fbe9e7;
   --radius: 10px;
 
+  /* Illustration palette */
+  --il-sky: #e6efe9;
+  --il-ground: #e6ddcd;
+  --il-wall: #fbf2e2;
+  --il-roof: #c4623a;
+  --il-roof-dark: #9f4b2b;
+  --il-pillar: #ffffff;
+  --il-window: #a3cbdb;
+  --il-step: #cfc4b1;
+  --il-trunk: #8a6243;
+  --il-trunk-dark: #6b4a31;
+  --il-leaf: #2f7d5b;
+  --il-leaf-2: #55a273;
+  --il-skin: #a8694a;
+  --il-hair: #2b211c;
+  --il-pants: #3d4b5c;
+  --il-line: #2b302d;
+  --il-paper: #ffffff;
+  --il-bar: #e3dacb;
+
   font-family: 'Segoe UI', system-ui, -apple-system, Roboto, 'Noto Sans Sinhala', 'Noto Sans Tamil', sans-serif;
   font-size: 16px;
   line-height: 1.55;
@@ -41,6 +61,23 @@
     --accent-soft: #3a2c17;
     --error: #ff9b8f;
     --error-soft: #3b201d;
+
+    --il-sky: #1f2c27;
+    --il-ground: #2b302c;
+    --il-wall: #e8dcc6;
+    --il-roof: #b9593a;
+    --il-roof-dark: #8f4229;
+    --il-pillar: #f4efe6;
+    --il-window: #6f9fb3;
+    --il-step: #6b6458;
+    --il-trunk: #8a6243;
+    --il-trunk-dark: #5e412b;
+    --il-leaf: #3f9a70;
+    --il-leaf-2: #63b98a;
+    --il-pants: #56677c;
+    --il-line: #d6dad5;
+    --il-paper: #2a302c;
+    --il-bar: #59625b;
     color-scheme: dark;
   }
 }

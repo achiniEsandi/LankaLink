@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
+import { DocumentsSpot, VerifiedSpot } from '../components/illustrations/Spots'
 import { experienceLabel } from '../lib/provider'
+import { SERVICE_ICONS } from '../lib/serviceIcons'
 
 // Where the provider is in the journey from sign-up to receiving jobs
 function journeyFor(status) {
@@ -76,12 +78,15 @@ export default function ProviderDashboard() {
   return (
     <div className="dashboard">
       <header className="dashboard__head">
-        <h1>{location.state?.justRegistered ? `Welcome to LankaLink, ${firstName}` : `Hello, ${firstName}`}</h1>
-        <p className="muted">
-          {provider.status === 'approved'
-            ? 'Your account is verified.'
-            : 'Your application is in progress. Here is what happens next.'}
-        </p>
+        <div>
+          <h1>{location.state?.justRegistered ? `Welcome to LankaLink, ${firstName}` : `Hello, ${firstName}`}</h1>
+          <p className="muted">
+            {provider.status === 'approved'
+              ? 'Your account is verified.'
+              : 'Your application is in progress. Here is what happens next.'}
+          </p>
+        </div>
+        <div className="dashboard__art">{provider.status === 'approved' ? <VerifiedSpot /> : <DocumentsSpot />}</div>
       </header>
 
       {notice && (
@@ -128,7 +133,17 @@ export default function ProviderDashboard() {
             <dt>NIC</dt>
             <dd>{provider.nic}</dd>
             <dt>Work</dt>
-            <dd>{provider.services.map((s) => labels[s] ?? s).join(', ')}</dd>
+            <dd className="service-list">
+              {provider.services.map((s) => {
+                const Icon = SERVICE_ICONS[s]
+                return (
+                  <span key={s} className="service-chip">
+                    {Icon && <Icon size={15} aria-hidden="true" />}
+                    {labels[s] ?? s}
+                  </span>
+                )
+              })}
+            </dd>
             <dt>Experience</dt>
             <dd>{experienceLabel(provider.experienceYears)}</dd>
             <dt>Districts</dt>

@@ -1,10 +1,13 @@
+import { CircleCheck } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 import Field from '../components/Field'
+import { SignUpSpot } from '../components/illustrations/Spots'
 import PasswordInput from '../components/PasswordInput'
 import { EXPERIENCE_OPTIONS, experienceLabel, normaliseNic, normalisePhone } from '../lib/provider'
+import { SERVICE_ICONS } from '../lib/serviceIcons'
 
 // Mirrors the backend checks so most mistakes are caught before submitting
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -152,13 +155,22 @@ function WorkStep({ form, errors, update, toggle, setForm, services }) {
         <legend className="group__label">What work can you do?</legend>
         <p className="group__hint">Choose everything you are comfortable doing. You can change this later.</p>
         <div className="tiles">
-          {services.map((s) => (
-            <label key={s.value} className={`tile${form.services.includes(s.value) ? ' tile--on' : ''}`}>
-              <input type="checkbox" checked={form.services.includes(s.value)} onChange={toggle('services', s.value)} />
-              <span className="tile__title">{s.label}</span>
-              <span className="tile__text">{s.description}</span>
-            </label>
-          ))}
+          {services.map((s) => {
+            const Icon = SERVICE_ICONS[s.value]
+            return (
+              <label key={s.value} className={`tile${form.services.includes(s.value) ? ' tile--on' : ''}`}>
+                <input type="checkbox" checked={form.services.includes(s.value)} onChange={toggle('services', s.value)} />
+                {Icon && (
+                  <span className="tile__icon" aria-hidden="true">
+                    <Icon size={20} />
+                  </span>
+                )}
+                {form.services.includes(s.value) && <CircleCheck className="tile__tick" size={22} aria-hidden="true" />}
+                <span className="tile__title">{s.label}</span>
+                <span className="tile__text">{s.description}</span>
+              </label>
+            )
+          })}
         </div>
         {errors.services && <p id="services-error" className="field__error">{errors.services}</p>}
       </fieldset>
@@ -440,6 +452,9 @@ export default function ProviderRegister() {
   return (
     <div className="signup">
       <aside className="signup__side">
+        <div className="signup__art">
+          <SignUpSpot />
+        </div>
         <p className="eyebrow">Work with LankaLink</p>
         <h1 className="signup__title">Join as a service provider</h1>
         <p className="muted">Takes about 5 minutes. Your progress is saved on this device if you leave the page.</p>
