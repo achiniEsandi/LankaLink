@@ -1,6 +1,7 @@
 import { Link, NavLink, Route, Routes, useNavigate } from 'react-router'
 import RequireRole from './auth/RequireRole'
 import { useAuth } from './auth/useAuth'
+import Logo from './components/Logo'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import ProviderDashboard from './pages/ProviderDashboard'
@@ -13,14 +14,17 @@ function Header() {
 
   return (
     <header className="header">
-      <Link to="/" className="brand">LankaLink</Link>
+      <Link to="/" className="brand" aria-label="LankaLink home">
+        <Logo />
+      </Link>
       <nav className="nav">
         {user ? (
           <>
-            {user.role === 'provider' && <NavLink to="/provider/dashboard">Dashboard</NavLink>}
+            <span className="nav__user">{user.name.split(' ')[0]}</span>
+            {user.role === 'provider' && <NavLink to="/provider/dashboard">My account</NavLink>}
             <button
               type="button"
-              className="btn btn--link"
+              className="link-btn"
               onClick={() => {
                 signOut()
                 navigate('/')
@@ -31,7 +35,7 @@ function Header() {
           </>
         ) : (
           <>
-            <NavLink to="/provider/register">Become a provider</NavLink>
+            <NavLink to="/provider/register">Work with us</NavLink>
             <NavLink to="/login">Log in</NavLink>
           </>
         )}

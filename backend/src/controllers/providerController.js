@@ -1,4 +1,11 @@
-import { DISTRICTS, SERVICE_LABELS, SERVICE_TYPES } from '../constants/index.js';
+import {
+  DISTRICTS,
+  LAUNCH_DISTRICTS,
+  PROVINCES,
+  SERVICE_DESCRIPTIONS,
+  SERVICE_LABELS,
+  SERVICE_TYPES,
+} from '../constants/index.js';
 import Provider, { NIC_PATTERN } from '../models/Provider.js';
 import User from '../models/User.js';
 import httpError from '../utils/httpError.js';
@@ -23,8 +30,14 @@ function validateRegistration(body) {
 // Choices for the registration form, so the frontend never drifts from the model
 export function getRegistrationOptions(req, res) {
   res.json({
-    services: SERVICE_TYPES.map((value) => ({ value, label: SERVICE_LABELS[value] })),
+    services: SERVICE_TYPES.map((value) => ({
+      value,
+      label: SERVICE_LABELS[value],
+      description: SERVICE_DESCRIPTIONS[value],
+    })),
     districts: DISTRICTS,
+    provinces: Object.entries(PROVINCES).map(([name, districts]) => ({ name, districts })),
+    launchDistricts: LAUNCH_DISTRICTS,
   });
 }
 

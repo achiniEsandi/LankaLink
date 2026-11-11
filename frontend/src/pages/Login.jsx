@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
+import Field from '../components/Field'
+import PasswordInput from '../components/PasswordInput'
 
 const HOME_BY_ROLE = {
   provider: '/provider/dashboard',
@@ -18,39 +20,50 @@ export default function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (!email.trim() || !password) {
+      setError('Enter your email and password')
+      return
+    }
     setError(null)
     setSubmitting(true)
     try {
-      const { token, user } = await api('/auth/login', { method: 'POST', body: { email, password } })
+      const { token, user } = await api('/auth/login', { method: 'POST', body: { email: email.trim(), password } })
       signIn(token, user)
       navigate(location.state?.from || HOME_BY_ROLE[user.role] || '/', { replace: true })
     } catch (err) {
-      setError(err.message)
+      setError(err.status === 401 ? 'That email and password do not match. Please try again.' : err.message)
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <section className="card">
+    <div className="auth">
       <h1>Log in</h1>
-      <form onSubmit={handleSubmit}>
-        <label className="field">
-          <span className="field__label">Email</span>
-          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-        </label>
-        <label className="field">
-          <span className="field__label">Password</span>
-          <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
-        </label>
-        {error && <p className="alert alert--error">{error}</p>}
-        <button type="submit" className="btn btn--primary" disabled={submitting}>
+      <p className="muted">Welcome back.</p>
+      <form onSubmit={handleSubmit} noValidate>
+        <Field label="Email address">
+          {(p) => (
+            <input {...p} type="email" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+          )}
+        </Field>
+        <Field label="Password">
+          {(p) => (
+            <PasswordInput {...p} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+          )}
+        </Field>
+        {error && (
+          <p className="alert alert--error" role="alert">
+            {error}
+          </p>
+        )}
+        <button type="submit" className="btn btn--primary btn--block" disabled={submitting}>
           {submitting ? 'Logging in…' : 'Log in'}
         </button>
       </form>
-      <p className="muted">
-        Want to offer services? <Link to="/provider/register">Register as a provider</Link>
+      <p className="auth__alt">
+        New here? <Link to="/provider/register">Sign up to work with LankaLink</Link>
       </p>
-    </section>
+    </div>
   )
 }

@@ -44,8 +44,9 @@ describe('GET /api/providers/options', () => {
 
     assert.equal(res.status, 200);
     assert.equal(res.body.services.length, 7);
-    assert.ok(res.body.services.every((s) => s.value && s.label));
+    assert.ok(res.body.services.every((s) => s.value && s.label && s.description));
     assert.equal(res.body.districts.length, 25);
+    assert.equal(res.body.provinces.flatMap((p) => p.districts).length, 25);
   });
 });
 
