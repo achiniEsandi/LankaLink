@@ -34,11 +34,16 @@ export async function forgotPassword(req, res) {
     await user.save();
 
     const link = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
-    await sendMail({
-      to: user.email,
-      subject: 'Reset your LankaLink password',
-      text: `Hello ${user.name},\n\nUse this link to choose a new password. It works for 1 hour:\n${link}\n\nIf you did not ask for this, you can ignore this email.`,
-    });
+    // A mail failure must not change the response, or it would reveal the account exists
+    try {
+      await sendMail({
+        to: user.email,
+        subject: 'Reset your LankaLink password',
+        text: `Hello ${user.name},\n\nUse this link to choose a new password. It works for 1 hour:\n${link}\n\nIf you did not ask for this, you can ignore this email.`,
+      });
+    } catch (err) {
+      console.error('Password reset email failed:', err);
+    }
   }
 
   res.json({ message: 'If an account exists for that email, we have sent a reset link.' });
