@@ -49,6 +49,7 @@ function Preview({ doc, token }) {
   }, [doc._id, isImage, token])
 
   if (isImage && url) return <img className="doc-preview" src={url} alt={`Preview of ${doc.originalName}`} />
+  if (isImage) return <span className="doc-preview doc-preview--loading" aria-label="Loading preview" />
   return (
     <span className="doc-preview doc-preview--file" aria-hidden="true">
       <FileText size={28} />

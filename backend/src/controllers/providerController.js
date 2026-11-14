@@ -6,6 +6,7 @@ import {
   PROVINCES,
   SERVICE_DESCRIPTIONS,
   SERVICE_LABELS,
+  SERVICE_PRICES,
   SERVICE_TYPES,
 } from '../constants/index.js';
 import Provider, { NIC_PATTERN } from '../models/Provider.js';
@@ -41,6 +42,7 @@ export function getRegistrationOptions(req, res) {
       value,
       label: SERVICE_LABELS[value],
       description: SERVICE_DESCRIPTIONS[value],
+      priceFrom: SERVICE_PRICES[value],
     })),
     districts: DISTRICTS,
     provinces: Object.entries(PROVINCES).map(([name, districts]) => ({ name, districts })),

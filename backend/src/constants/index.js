@@ -32,6 +32,17 @@ export const SERVICE_DESCRIPTIONS = {
   errand_assistance: 'Buy groceries, pay bills, collect medicine or documents',
 };
 
+// Starting prices in LKR (Business Plan, Annex I and III)
+export const SERVICE_PRICES = {
+  property_inspection: 3000,
+  house_cleaning: 3500,
+  garden_maintenance: 4000,
+  minor_repairs: 2000,
+  pet_care: 3500,
+  family_welfare_visit: 5000,
+  errand_assistance: 2000,
+};
+
 export const PROVINCES = {
   Western: ['Colombo', 'Gampaha', 'Kalutara'],
   Central: ['Kandy', 'Matale', 'Nuwara Eliya'],

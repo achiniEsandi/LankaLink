@@ -80,6 +80,23 @@ npm run dev
 >
 > `npm test` in `backend/` uses a temporary in-memory MongoDB, so tests never touch the Atlas data.
 
+## Photos for the public pages
+
+The landing and professionals pages show real photos once these files are placed in `frontend/public/images/` (JPG, about 1200 px wide, landscape). Until then a coloured placeholder or illustration is shown, so nothing breaks.
+
+| File | What it should show |
+|---|---|
+| `svc-property_inspection.jpg` | A person checking an empty house (door, roof, walls) |
+| `svc-house_cleaning.jpg` | Someone cleaning a living room or kitchen |
+| `svc-garden_maintenance.jpg` | A gardener trimming plants or cutting grass |
+| `svc-minor_repairs.jpg` | A technician fixing a tap, switch or door |
+| `svc-pet_care.jpg` | Someone feeding or walking a dog |
+| `svc-family_welfare_visit.jpg` | A carer chatting with an elderly person at home |
+| `svc-errand_assistance.jpg` | Someone carrying groceries or paying a bill |
+| `pro-hero.jpg` | A friendly service professional with their tools |
+
+Use photos you own or free-licence ones (for example from [Unsplash](https://unsplash.com/license) or [Pexels](https://www.pexels.com/license/)), ideally of Sri Lankan homes and people. The hero collage switches from the illustration to photos once `svc-house_cleaning.jpg` exists.
+
 ## Email verification
 
 New providers get an email with a confirmation link (valid 24 hours). Admins cannot approve a provider until their email is confirmed.
