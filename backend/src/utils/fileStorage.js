@@ -1,18 +1,11 @@
-import crypto from 'node:crypto';
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import mongoose from 'mongoose';
+import httpError from './httpError.js';
 
-// Private storage outside anything served over HTTP
-export const uploadRoot = () => path.resolve(process.env.UPLOAD_DIR || 'uploads');
+// Files live in MongoDB (GridFS bucket "uploads"), so every machine sharing the
+// Atlas database sees the same files. Nothing is written to local disk.
+const bucket = () => new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
 
-const EXTENSIONS = {
-  'image/jpeg': '.jpg',
-  'image/png': '.png',
-  'image/webp': '.webp',
-  'application/pdf': '.pdf',
-};
-
-export const ALLOWED_MIME_TYPES = Object.keys(EXTENSIONS);
+export const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
 // Identify the file from its first bytes instead of trusting the browser's type or the file name
 export function detectMimeType(buffer) {
@@ -24,29 +17,37 @@ export function detectMimeType(buffer) {
   return null;
 }
 
-function resolveInside(folder, storedName) {
-  const root = uploadRoot();
-  const full = path.resolve(root, folder, storedName);
-  if (!full.startsWith(root + path.sep)) throw new Error('Invalid file path');
-  return full;
+const toId = (storedName) => (mongoose.isValidObjectId(storedName) ? new mongoose.Types.ObjectId(storedName) : null);
+
+// Returns the stored file's id, which the owning record keeps as `storedName`
+export function saveFile(owner, buffer, mimeType) {
+  return new Promise((resolve, reject) => {
+    const upload = bucket().openUploadStream(`${owner}`, { metadata: { owner: `${owner}`, mimeType } });
+    upload.once('error', reject);
+    upload.once('finish', () => resolve(upload.id.toString()));
+    upload.end(buffer);
+  });
 }
 
-export async function saveFile(folder, buffer, mimeType) {
-  const storedName = `${crypto.randomUUID()}${EXTENSIONS[mimeType]}`;
-  const full = resolveInside(folder, storedName);
-  await fs.mkdir(path.dirname(full), { recursive: true });
-  await fs.writeFile(full, buffer, { flag: 'wx' });
-  return storedName;
-}
-
-export function filePath(folder, storedName) {
-  return resolveInside(folder, storedName);
-}
-
-export async function deleteFile(folder, storedName) {
+export async function deleteFile(owner, storedName) {
+  const id = toId(storedName);
+  if (!id) return;
   try {
-    await fs.unlink(resolveInside(folder, storedName));
+    await bucket().delete(id);
   } catch (err) {
-    if (err.code !== 'ENOENT') throw err;
+    // Already gone is fine; anything else is a real failure
+    if (!/FileNotFound|not found/i.test(err.message)) throw err;
   }
+}
+
+// Streams a stored file into the response; headers must already be set
+export async function sendFile(res, storedName) {
+  const id = toId(storedName);
+  const [file] = id ? await bucket().find({ _id: id }).limit(1).toArray() : [];
+  if (!file) throw httpError(404, 'File not found');
+
+  res.set('Content-Length', String(file.length));
+  await new Promise((resolve, reject) => {
+    bucket().openDownloadStream(id).once('error', reject).once('end', resolve).pipe(res);
+  });
 }

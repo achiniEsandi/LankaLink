@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { PHOTO_MIME_TYPES } from '../constants/index.js';
 import Provider, { NIC_PATTERN } from '../models/Provider.js';
 import ProviderDocument from '../models/ProviderDocument.js';
-import { deleteFile, detectMimeType, filePath, saveFile } from '../utils/fileStorage.js';
+import { deleteFile, detectMimeType, saveFile, sendFile } from '../utils/fileStorage.js';
 import httpError from '../utils/httpError.js';
 
 const PHONE_PATTERN = /^(?:\+94|0)7\d{8}$/;
@@ -107,18 +107,18 @@ export async function deleteMyPhoto(req, res) {
   res.status(204).end();
 }
 
-function sendPhoto(res, provider, cache) {
+async function sendPhoto(res, provider, cache) {
   if (!provider?.photo?.storedName) throw httpError(404, 'No photo');
   res.set({
     'Content-Type': provider.photo.mimeType,
     'Cache-Control': cache,
     'X-Content-Type-Options': 'nosniff',
   });
-  res.sendFile(filePath(provider._id.toString(), provider.photo.storedName));
+  await sendFile(res, provider.photo.storedName);
 }
 
 export async function getMyPhoto(req, res) {
-  sendPhoto(res, await myProvider(req, true), 'private, no-store');
+  await sendPhoto(res, await myProvider(req, true), 'private, no-store');
 }
 
 async function approvedProvider(id, withPhoto = false) {
@@ -152,5 +152,5 @@ export async function getPublicProfile(req, res) {
 }
 
 export async function getPublicPhoto(req, res) {
-  sendPhoto(res, await approvedProvider(req.params.id, true), 'public, max-age=300');
+  await sendPhoto(res, await approvedProvider(req.params.id, true), 'public, max-age=300');
 }

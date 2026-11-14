@@ -6,7 +6,7 @@ import {
 } from '../constants/index.js';
 import Provider from '../models/Provider.js';
 import ProviderDocument from '../models/ProviderDocument.js';
-import { ALLOWED_MIME_TYPES, deleteFile, detectMimeType, filePath, saveFile } from '../utils/fileStorage.js';
+import { ALLOWED_MIME_TYPES, deleteFile, detectMimeType, saveFile, sendFile } from '../utils/fileStorage.js';
 import httpError from '../utils/httpError.js';
 
 async function myProvider(req) {
@@ -110,7 +110,7 @@ export async function downloadMyDocument(req, res) {
     'Cache-Control': 'private, no-store',
     'X-Content-Type-Options': 'nosniff',
   });
-  res.sendFile(filePath(provider._id.toString(), doc.storedName));
+  await sendFile(res, doc.storedName);
 }
 
 export async function deleteMyDocument(req, res) {

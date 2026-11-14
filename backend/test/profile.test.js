@@ -1,14 +1,10 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
 import { after, before, beforeEach, describe, it } from 'node:test';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import request from 'supertest';
 
 process.env.JWT_SECRET = 'test-secret';
-process.env.UPLOAD_DIR = await fs.mkdtemp(path.join(os.tmpdir(), 'lankalink-profile-'));
 const { default: app } = await import('../src/app.js');
 const { default: Provider } = await import('../src/models/Provider.js');
 const { default: ProviderDocument } = await import('../src/models/ProviderDocument.js');
@@ -51,7 +47,6 @@ before(async () => {
 after(async () => {
   await mongoose.disconnect();
   await mongod.stop();
-  await fs.rm(process.env.UPLOAD_DIR, { recursive: true, force: true });
 });
 
 beforeEach(async () => {

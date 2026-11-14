@@ -1,14 +1,10 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs/promises';
-import os from 'node:os';
-import path from 'node:path';
 import { after, before, beforeEach, describe, it } from 'node:test';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import request from 'supertest';
 
 process.env.JWT_SECRET = 'test-secret';
-process.env.UPLOAD_DIR = await fs.mkdtemp(path.join(os.tmpdir(), 'lankalink-docs-'));
 const { default: app } = await import('../src/app.js');
 const { default: Provider } = await import('../src/models/Provider.js');
 const { default: ProviderDocument } = await import('../src/models/ProviderDocument.js');
@@ -45,11 +41,8 @@ const upload = (token, type, buffer, filename) =>
     .field('type', type)
     .attach('file', buffer, filename);
 
-const filesOnDisk = async () => {
-  const dirs = await fs.readdir(process.env.UPLOAD_DIR);
-  const lists = await Promise.all(dirs.map((d) => fs.readdir(path.join(process.env.UPLOAD_DIR, d))));
-  return lists.flat().length;
-};
+// Files are stored in MongoDB GridFS, so count them there
+const storedFiles = () => mongoose.connection.db.collection('uploads.files').countDocuments();
 
 before(async () => {
   mongod = await MongoMemoryServer.create();
@@ -60,13 +53,12 @@ before(async () => {
 after(async () => {
   await mongoose.disconnect();
   await mongod.stop();
-  await fs.rm(process.env.UPLOAD_DIR, { recursive: true, force: true });
 });
 
 beforeEach(async () => {
   await Promise.all([User.deleteMany({}), Provider.deleteMany({}), ProviderDocument.deleteMany({})]);
-  await fs.rm(process.env.UPLOAD_DIR, { recursive: true, force: true });
-  await fs.mkdir(process.env.UPLOAD_DIR, { recursive: true });
+  await mongoose.connection.db.collection('uploads.files').deleteMany({});
+  await mongoose.connection.db.collection('uploads.chunks').deleteMany({});
 });
 
 describe('provider documents', () => {
@@ -93,7 +85,7 @@ describe('provider documents', () => {
 
     const list = await request(app).get('/api/providers/me/documents').set('Authorization', `Bearer ${token}`);
     assert.equal(list.body.complete, true);
-    assert.equal(await filesOnDisk(), 3);
+    assert.equal(await storedFiles(), 3);
   });
 
   it('rejects a text file pretending to be a photo', async () => {
@@ -101,7 +93,7 @@ describe('provider documents', () => {
     const res = await upload(token, 'nic_front', Buffer.from('this is not really an image at all'), 'nic.jpg');
 
     assert.equal(res.status, 400);
-    assert.equal(await filesOnDisk(), 0);
+    assert.equal(await storedFiles(), 0);
   });
 
   it('rejects files over 5 MB', async () => {
@@ -130,7 +122,7 @@ describe('provider documents', () => {
 
     assert.equal(second.status, 201);
     assert.equal(await ProviderDocument.countDocuments({ type: 'nic_front' }), 1);
-    assert.equal(await filesOnDisk(), 1);
+    assert.equal(await storedFiles(), 1);
   });
 
   it('will not replace an approved document', async () => {
@@ -178,7 +170,7 @@ describe('provider documents', () => {
       .set('Authorization', `Bearer ${token}`);
     assert.equal(res.status, 204);
     assert.equal(await ProviderDocument.countDocuments(), 0);
-    assert.equal(await filesOnDisk(), 0);
+    assert.equal(await storedFiles(), 0);
   });
 
   it('returns 404 for a malformed document id', async () => {

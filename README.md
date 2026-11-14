@@ -25,9 +25,21 @@ LankaLink/
 
 ## Getting started
 
+### Database: MongoDB Atlas
+
+All data, including uploaded photos and documents (stored in MongoDB GridFS), lives in the shared **MongoDB Atlas** cluster. There is no local database. Before running anything:
+
+1. Ask the team lead for your own Atlas database user, and make sure your IP address is allowed under Atlas **Network Access**.
+2. Create `backend/.env` from the example and fill in `MONGO_URI` and `JWT_SECRET`:
+   ```bash
+   cp backend/.env.example backend/.env
+   ```
+
+`backend/.env` is ignored by Git. Never commit it or paste the connection string in chats. The backend refuses to start if `MONGO_URI` or `JWT_SECRET` is missing.
+
 ### Option 1 — Docker (recommended)
 
-Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) (running).
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) (running). Docker reads `backend/.env`, so the containers use the same Atlas database.
 
 ```bash
 docker compose up --build
@@ -36,8 +48,7 @@ docker compose up --build
 | Service | URL |
 |---|---|
 | Frontend | http://localhost:5173 |
-| Backend API | http://localhost:5000/api/health |
-| MongoDB | mongodb://localhost:27017/lankalink |
+| Backend API | http://localhost:5000/api/health (should show `"db":"connected"`) |
 
 If port 5000 or 5173 is already used by another project, pick other host ports:
 
@@ -51,17 +62,10 @@ Code changes in `frontend/` and `backend/` reload automatically. After adding or
 
 ### Option 2 — Run locally with Node
 
-Requires Node.js 22+. Start just the database with Docker (or use a local/Atlas MongoDB):
-
-```bash
-docker compose up -d mongo
-```
-
-Then in two terminals:
+Requires Node.js 22+ and `backend/.env` set up as above. In two terminals:
 
 ```bash
 cd backend
-cp .env.example .env
 npm install
 npm run dev
 ```
@@ -73,6 +77,8 @@ npm run dev
 ```
 
 > Tip: even when using Docker, run `npm install` locally in each folder so VS Code gets autocomplete and linting.
+>
+> `npm test` in `backend/` uses a temporary in-memory MongoDB, so tests never touch the Atlas data.
 
 ## Branches
 

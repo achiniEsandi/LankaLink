@@ -3,11 +3,14 @@ import app from './app.js';
 import { connectDB } from './config/db.js';
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/lankalink';
+const { MONGO_URI } = process.env;
 
-if (!process.env.JWT_SECRET) {
-  console.error('JWT_SECRET is not set. Copy backend/.env.example to backend/.env and fill it in.');
-  process.exit(1);
+// No silent fallback to a local database: everyone must point at the shared MongoDB Atlas cluster
+for (const name of ['MONGO_URI', 'JWT_SECRET']) {
+  if (!process.env[name]) {
+    console.error(`${name} is not set. Copy backend/.env.example to backend/.env and fill it in.`);
+    process.exit(1);
+  }
 }
 
 try {
