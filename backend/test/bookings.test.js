@@ -270,6 +270,7 @@ describe('recurring bookings', () => {
     const visits = await Booking.find({ recurringPlan: res.body.booking.recurringPlan }).sort({ date: 1 });
     assert.deepEqual(visits.map((v) => formatDay(v.date)), [day(1), day(8), day(15), day(22), day(29)].filter((d) => d <= day(28)));
     assert.ok(visits.every((v) => String(v.provider) === a.id));
+    assert.deepEqual(visits[1].history.map((h) => h.status), ['requested', 'assigned'], 'repeat visits have a full timeline');
 
     await request(app).post(`/api/bookings/jobs/${visits[0]._id}/accept`).set(auth(a.token));
     const plan = await RecurringPlan.findById(res.body.booking.recurringPlan);
@@ -319,7 +320,45 @@ describe('scheduler', () => {
     assert.equal(String((await Booking.findById(late.body.booking._id)).provider), b.id);
 
     // Running again changes nothing
-    assert.deepEqual(await runSchedulerTick(), { generated: 0, expired: 0, rematched: 0 });
+    assert.deepEqual(await runSchedulerTick(), { generated: 0, expired: 0, rematched: 0, closed: 0, reassigned: 0 });
+  });
+
+  it('closes bookings whose day passed without a visit', async () => {
+    const p = await makeProvider('Nimal');
+    const waiting = await newBooking({ location: { address: '9 Hill St', district: 'Kandy' } });
+    const accepted = await newBooking();
+    await request(app).post(`/api/bookings/jobs/${accepted.body.booking._id}/accept`).set(auth(p.token));
+    const yesterday = addDays(todaySL(), -1);
+    await Booking.updateMany({}, { date: yesterday });
+
+    // An offer for a past day can't be accepted any more
+    const late = await newBooking({ period: 'evening' });
+    await Booking.updateOne({ _id: late.body.booking._id }, { date: yesterday });
+    assert.equal((await request(app).post(`/api/bookings/jobs/${late.body.booking._id}/accept`).set(auth(p.token))).status, 409);
+
+    const summary = await runSchedulerTick();
+    assert.equal(summary.closed, 3);
+    const w = await Booking.findById(waiting.body.booking._id);
+    assert.equal(w.status, 'cancelled');
+    assert.match(w.cancelledReason, /No professional/);
+    assert.match((await Booking.findById(accepted.body.booking._id)).cancelledReason, /not checked in/);
+    const jobs = await request(app).get('/api/bookings/jobs').set(auth(p.token));
+    assert.equal(jobs.body.upcoming.length, 0);
+  });
+
+  it('moves jobs away from a suspended provider', async () => {
+    const a = await makeProvider('Nimal', { rating: 5, count: 1 });
+    const b = await makeProvider('Kamal', { rating: 3, count: 1 });
+    const { body } = await newBooking();
+    await request(app).post(`/api/bookings/jobs/${body.booking._id}/accept`).set(auth(a.token));
+    await Provider.updateOne({ _id: a.id }, { status: 'suspended' });
+
+    const summary = await runSchedulerTick();
+    assert.equal(summary.reassigned, 1);
+    const moved = await Booking.findById(body.booking._id);
+    assert.equal(String(moved.provider), b.id);
+    assert.equal(moved.status, 'assigned');
+    assert.ok(moved.history.some((h) => h.note === 'Previous professional is no longer available'));
   });
 });
 

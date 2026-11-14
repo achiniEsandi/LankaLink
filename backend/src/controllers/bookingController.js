@@ -391,6 +391,7 @@ async function sendJob(res, booking) {
 export async function acceptJob(req, res) {
   const { provider, booking } = await loadMyJob(req);
   if (booking.status !== 'assigned') throw httpError(409, 'This request is no longer waiting for you');
+  if (booking.date < todaySL()) throw httpError(409, 'This visit date has passed');
   if (provider.status !== 'approved') throw httpError(403, 'Your account must be approved to accept jobs');
   booking.setStatus('accepted', req.user._id, `${req.user.name.split(' ')[0]} accepted the job`);
   await booking.save();

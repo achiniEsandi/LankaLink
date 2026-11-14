@@ -26,6 +26,7 @@ export async function generateUpcoming(plan, today = todaySL()) {
         price: SERVICE_PRICES[plan.service],
         recurringPlan: plan._id,
       });
+      booking.setStatus('requested', undefined, 'Repeat visit scheduled');
       await assignNext(booking, { preferred: plan.preferredProvider });
       await booking.save();
       created.push(booking);
