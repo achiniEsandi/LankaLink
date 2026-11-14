@@ -1,6 +1,8 @@
 import {
+  DAYS,
   DISTRICTS,
   LAUNCH_DISTRICTS,
+  PERIODS,
   PROVINCES,
   SERVICE_DESCRIPTIONS,
   SERVICE_LABELS,
@@ -38,6 +40,8 @@ export function getRegistrationOptions(req, res) {
     districts: DISTRICTS,
     provinces: Object.entries(PROVINCES).map(([name, districts]) => ({ name, districts })),
     launchDistricts: LAUNCH_DISTRICTS,
+    days: DAYS,
+    periods: Object.entries(PERIODS).map(([value, hours]) => ({ value, hours })),
   });
 }
 
@@ -76,10 +80,4 @@ export async function registerProvider(req, res) {
   }
 
   res.status(201).json({ token: signToken(user), user, provider });
-}
-
-export async function getMyProfile(req, res) {
-  const provider = await Provider.findOne({ user: req.user._id });
-  if (!provider) throw httpError(404, 'Provider profile not found');
-  res.json({ user: req.user, provider });
 }

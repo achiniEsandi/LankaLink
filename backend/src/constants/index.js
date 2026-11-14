@@ -61,5 +61,15 @@ export const DOCUMENT_TYPES = {
 
 export const DOCUMENT_STATUSES = ['pending', 'approved', 'rejected'];
 
+// Weekly availability, used by booking matching
+export const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+export const PERIODS = {
+  morning: '8 am to 12 pm',
+  afternoon: '12 pm to 4 pm',
+  evening: '4 pm to 8 pm',
+};
+
+export const PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
 export const DOCUMENT_MAX_BYTES = 5 * 1024 * 1024;
 export const DOCUMENT_MAX_CERTIFICATES = 5;

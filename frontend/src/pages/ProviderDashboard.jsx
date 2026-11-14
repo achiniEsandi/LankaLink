@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
+import { Pencil } from 'lucide-react'
 import { DocumentsSpot, VerifiedSpot } from '../components/illustrations/Spots'
+import Avatar from '../components/provider/Avatar'
+import { summariseAvailability } from '../lib/availability'
 import { experienceLabel } from '../lib/provider'
+import useMyPhoto from '../lib/useMyPhoto'
 import { SERVICE_ICONS } from '../lib/serviceIcons'
 
 function documentsStep(verified, docs) {
@@ -82,6 +86,7 @@ export default function ProviderDashboard() {
   const [labels, setLabels] = useState({})
   const [docs, setDocs] = useState(null)
   const [error, setError] = useState(null)
+  const photoUrl = useMyPhoto(token, data?.provider.hasPhoto ? data.provider.photo.updatedAt : null)
 
   useEffect(() => {
     api('/providers/me', { token })
@@ -109,6 +114,11 @@ export default function ProviderDashboard() {
   const firstName = user.name.split(' ')[0]
   const notice = STATUS_NOTICE[provider.status]
   const journey = journeyFor(provider.status, docs)
+  const nudges = [
+    !provider.hasPhoto && 'Add a profile photo so customers can recognise you',
+    !provider.availability?.length && 'Set the days and times you can work',
+    !provider.bio && 'Write a short introduction for customers',
+  ].filter(Boolean)
 
   return (
     <div className="dashboard">
@@ -157,16 +167,30 @@ export default function ProviderDashboard() {
         </section>
 
         <section className="panel">
-          <h2 className="panel__title">Your profile</h2>
+          <div className="profile-head">
+            <Avatar src={photoUrl} name={user.name} size={56} />
+            <div className="profile-head__text">
+              <h2 className="panel__title">Your profile</h2>
+              <p className="muted small">{user.name}</p>
+            </div>
+            <Link to="/provider/profile" className="btn btn--ghost btn--small">
+              <Pencil size={14} aria-hidden="true" /> Edit
+            </Link>
+          </div>
+
+          {nudges.length > 0 && (
+            <ul className="nudges">
+              {nudges.map((n) => (
+                <li key={n}>
+                  <Link to="/provider/profile">{n}</Link>
+                </li>
+              ))}
+            </ul>
+          )}
+
           <dl className="profile">
-            <dt>Name</dt>
-            <dd>{user.name}</dd>
             <dt>Mobile</dt>
             <dd>{user.phone}</dd>
-            <dt>Email</dt>
-            <dd>{user.email}</dd>
-            <dt>NIC</dt>
-            <dd>{provider.nic}</dd>
             <dt>Work</dt>
             <dd className="service-list">
               {provider.services.map((s) => {
@@ -183,8 +207,14 @@ export default function ProviderDashboard() {
             <dd>{experienceLabel(provider.experienceYears)}</dd>
             <dt>Districts</dt>
             <dd>{provider.serviceAreas.join(', ')}</dd>
+            <dt>Available</dt>
+            <dd>{summariseAvailability(provider.availability) ?? <span className="muted">Not set yet</span>}</dd>
           </dl>
-          <p className="muted small">Need to change something? Call us on 070 267 8393.</p>
+          {provider.status === 'approved' && (
+            <Link to={`/providers/${provider._id}`} className="link-btn">
+              View your public profile
+            </Link>
+          )}
         </section>
       </div>
     </div>

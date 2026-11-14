@@ -6,6 +6,8 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import ProviderDashboard from './pages/ProviderDashboard'
 import ProviderDocuments from './pages/ProviderDocuments'
+import ProviderProfileEdit from './pages/ProviderProfileEdit'
+import ProviderPublicProfile from './pages/ProviderPublicProfile'
 import ProviderRegister from './pages/ProviderRegister'
 import './App.css'
 
@@ -70,6 +72,15 @@ function App() {
               </RequireRole>
             }
           />
+          <Route
+            path="/provider/profile"
+            element={
+              <RequireRole role="provider">
+                <ProviderProfileEdit />
+              </RequireRole>
+            }
+          />
+          <Route path="/providers/:id" element={<ProviderPublicProfile />} />
           <Route path="*" element={<p className="muted">Page not found.</p>} />
         </Routes>
       </main>
