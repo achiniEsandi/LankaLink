@@ -101,8 +101,10 @@ Use photos you own or free-licence ones (for example from [Unsplash](https://uns
 
 New providers get an email with a confirmation link (valid 24 hours). Admins cannot approve a provider until their email is confirmed.
 
-- **Development:** leave `BREVO_API_KEY` empty. The email, including the link, is printed in the backend terminal. Open the link in the browser to confirm.
-- **Real emails:** create a free [Brevo](https://www.brevo.com/) account, verify the sender address you want to send from, create an API key, and set `BREVO_API_KEY` and `EMAIL_FROM` in `backend/.env`. Restart the backend.
+Emails go through the shared SMTP mailer (`backend/src/utils/mailer.js`, also used for password reset).
+
+- **Development:** leave `SMTP_HOST` empty. The email, including the link, is printed in the backend terminal. Open the link in the browser to confirm.
+- **Real emails (Gmail):** turn on 2-Step Verification for the Gmail account, create an [App Password](https://myaccount.google.com/apppasswords), then set in `backend/.env`: `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_USER=` your Gmail address, `SMTP_PASS=` the App Password, and `MAIL_FROM=LankaLink <your Gmail address>`. Restart the backend.
 
 Logins are limited to 5 wrong passwords per account per 15 minutes (plus a per-device cap), and sign-ups to 10 per device per hour. Limits are kept in memory and reset when the backend restarts.
 

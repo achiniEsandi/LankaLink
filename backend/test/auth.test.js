@@ -9,7 +9,7 @@ process.env.NODE_ENV = 'test';
 process.env.CLIENT_URL = 'http://localhost:5174';
 const { default: app } = await import('../src/app.js');
 const { clearAllLimits } = await import('../src/utils/rateLimiter.js');
-const { sentMail } = await import('../src/utils/mailer.js');
+const { testOutbox } = await import('../src/utils/mailer.js');
 const { default: Provider } = await import('../src/models/Provider.js');
 const { default: User } = await import('../src/models/User.js');
 
@@ -33,7 +33,7 @@ async function register(email) {
   return res;
 }
 
-const tokenFromLastEmail = () => sentMail.at(-1).text.match(/token=([a-f0-9]{64})/)[1];
+const tokenFromLastEmail = () => testOutbox.at(-1).text.match(/token=([a-f0-9]{64})/)[1];
 const login = (email, password) => request(app).post('/api/auth/login').send({ email, password });
 
 before(async () => {
@@ -49,7 +49,7 @@ after(async () => {
 
 beforeEach(async () => {
   clearAllLimits();
-  sentMail.length = 0;
+  testOutbox.length = 0;
   await Promise.all([User.deleteMany({}), Provider.deleteMany({})]);
 });
 
@@ -61,9 +61,9 @@ describe('email verification', () => {
     assert.equal(res.body.user.emailVerified, false);
     assert.equal(res.body.user.emailVerification, undefined);
 
-    assert.equal(sentMail.length, 1);
-    assert.equal(sentMail[0].to, 'kamala@example.com');
-    assert.match(sentMail[0].text, /http:\/\/localhost:5174\/verify-email\?token=[a-f0-9]{64}/);
+    assert.equal(testOutbox.length, 1);
+    assert.equal(testOutbox[0].to, 'kamala@example.com');
+    assert.match(testOutbox[0].text, /http:\/\/localhost:5174\/verify-email\?token=[a-f0-9]{64}/);
 
     // Only a hash is stored
     const stored = await User.findOne({ email: 'kamala@example.com' }).select('+emailVerification.tokenHash');
@@ -108,7 +108,7 @@ describe('email verification', () => {
     await User.updateMany({}, { 'emailVerification.lastSentAt': new Date(Date.now() - 2 * 60 * 1000) });
     const res = await resend();
     assert.equal(res.status, 200);
-    assert.equal(sentMail.length, 2);
+    assert.equal(testOutbox.length, 2);
 
     assert.equal((await request(app).post('/api/auth/verify-email').send({ token: first })).status, 400);
     assert.equal((await request(app).post('/api/auth/verify-email').send({ token: tokenFromLastEmail() })).status, 200);

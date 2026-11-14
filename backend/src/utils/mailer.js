@@ -1,33 +1,37 @@
-// Sends email through Brevo's HTTPS API (no extra package needed).
-// Without BREVO_API_KEY the message is printed to the backend console instead,
-// so sign-up still works during development. Tests keep messages in memory.
-export const sentMail = [];
+import nodemailer from 'nodemailer';
 
-export async function sendMail({ to, subject, text, html }) {
+// Shared email sender. Sends through SMTP when SMTP_HOST is set; otherwise logs the
+// message (development) or keeps it in memory (tests). Notifications can reuse this.
+export const testOutbox = [];
+
+let transport;
+
+function getTransport() {
+  if (!transport) {
+    transport = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT) || 587,
+      // Port 465 uses TLS from the start; 587 upgrades with STARTTLS
+      secure: Number(process.env.SMTP_PORT) === 465,
+      auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+    });
+  }
+  return transport;
+}
+
+export async function sendMail({ to, subject, text }) {
   if (process.env.NODE_ENV === 'test') {
-    sentMail.push({ to, subject, text, html });
+    testOutbox.push({ to, subject, text });
     return;
   }
-
-  const apiKey = process.env.BREVO_API_KEY;
-  if (!apiKey) {
-    console.log(`\n[email not sent: BREVO_API_KEY is not set]\nTo: ${to}\nSubject: ${subject}\n${text}\n`);
+  if (!process.env.SMTP_HOST) {
+    console.log(`[mail] SMTP_HOST not set, so not sending.\n[mail] To: ${to}\n[mail] Subject: ${subject}\n${text}\n`);
     return;
   }
-
-  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: { 'api-key': apiKey, 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({
-      sender: { email: process.env.EMAIL_FROM, name: process.env.EMAIL_FROM_NAME || 'LankaLink' },
-      to: [{ email: to }],
-      subject,
-      textContent: text,
-      htmlContent: html,
-    }),
+  await getTransport().sendMail({
+    from: process.env.MAIL_FROM || 'LankaLink <no-reply@lankalink.lk>',
+    to,
+    subject,
+    text,
   });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '');
-    throw new Error(`Email provider rejected the message (${res.status}): ${detail.slice(0, 200)}`);
-  }
 }
