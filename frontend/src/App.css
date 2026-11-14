@@ -3014,13 +3014,6 @@ img.photo {
 .tint--family_welfare_visit.photo--fallback { background: linear-gradient(135deg, #efe7fa, #f8f4fd); color: #6a45a8; }
 .tint--errand_assistance.photo--fallback { background: linear-gradient(135deg, #fbf3d9, #fdf9ec); color: #8f6f0d; }
 
-@media (prefers-color-scheme: dark) {
-  [class*="tint--"].photo--fallback {
-    background: linear-gradient(135deg, var(--primary-soft), var(--sunken));
-    color: var(--primary);
-  }
-}
-
 .hero-art {
   position: relative;
   min-height: 420px;
@@ -3650,4 +3643,10 @@ img.photo {
   .stat-cards {
     grid-template-columns: 1fr;
   }
+}
+
+.phone__photo {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
 }

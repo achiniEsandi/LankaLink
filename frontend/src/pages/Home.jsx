@@ -237,9 +237,9 @@ export default function Home() {
               </li>
             </ul>
             <div className="phone__photos">
-              <span />
-              <span />
-              <span />
+              {['svc-property_inspection', 'svc-garden_maintenance', 'svc-minor_repairs'].map((name) => (
+                <Photo key={name} name={name} alt="" className="phone__photo" />
+              ))}
             </div>
           </div>
         </div>

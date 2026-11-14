@@ -82,7 +82,7 @@ npm run dev
 
 ## Photos for the public pages
 
-The landing and professionals pages show real photos once these files are placed in `frontend/public/images/` (JPG, about 1200 px wide, landscape). Until then a coloured placeholder or illustration is shown, so nothing breaks.
+The landing and professionals pages use the photos in `frontend/public/images/` (free Unsplash photos, credited in `frontend/public/images/CREDITS.md`). To change one, replace the file with a JPG of the same name (about 1200 px wide). If a file is missing, a coloured placeholder or illustration is shown instead.
 
 | File | What it should show |
 |---|---|
