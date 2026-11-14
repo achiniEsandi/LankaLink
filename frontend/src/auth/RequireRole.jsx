@@ -5,7 +5,7 @@ export default function RequireRole({ role, children }) {
   const { token, user } = useAuth()
   const location = useLocation()
 
-  if (!token) return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  if (!token) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
   if (user?.role !== role) return <Navigate to="/" replace />
   return children
 }

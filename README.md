@@ -120,6 +120,27 @@ Customers can review a provider once per booking, after the booking is confirmed
 
 The booking screen links customers to `/reviews/new?booking=<booking id>` to leave a review. Ratings are recalculated automatically; admins can hide reviews (they then stop counting), and providers averaging under 3 stars after 3 reviews are flagged in the admin list.
 
+## Bookings
+
+Customers book at `/book` (service cards on the home page link to `/book?service=<type>`), follow progress at `/bookings`, and manage repeat plans in the **Repeat plans** tab. Providers handle requests at `/provider/jobs`; admins see every booking at `/admin/bookings`.
+
+**Lifecycle:** `requested → assigned → accepted → checked_in → completed → confirmed`, or `cancelled`. Each change is logged in the booking's `history`, which drives the customer timeline.
+
+- **Scheduling:** a booking is for a day (tomorrow up to 60 days ahead) and a time of day (morning, afternoon or evening), matching how providers set their availability. A provider is never given two active jobs in the same slot.
+- **Matching:** approved providers who offer the service, cover the district and are available that day and time. The best one gets the offer first: highest rating, then most reviews, then fewest upcoming jobs.
+- **Accept or decline:** a provider sees the area and job details, and gets the exact address and phone number only after accepting. Declining, or not answering within 24 hours, passes the booking to the next match. If nobody is free the booking waits as `requested`, and the scheduler keeps trying.
+- **Cancel and reschedule:** customers can cancel until the provider checks in. They can reschedule until the day before the visit; the same provider is asked first.
+- **Repeat bookings:** every week, every 2 weeks or every 4 weeks. Visits are created 4 weeks ahead and stay with the provider who accepted the first one. Pausing or cancelling a plan cancels its future visits.
+- **Check-in and completion** are simple buttons for now. Ahmed's GPS check-in and photo proof will replace them without changing the statuses.
+- **Scheduler:** `backend/src/utils/scheduler.js` runs every 15 minutes in the server (not in tests). It creates repeat visits, moves unanswered offers on, and retries unmatched bookings.
+- **Location:** for now the address is stored on the booking. It can point to Dilshan's Property / FamilyMember records once the customer portal is merged.
+
+Until customer sign-up is merged, create a customer for testing from `backend/`:
+
+```bash
+npm run create-customer -- ayesha@example.com "Ayesha Fernando"
+```
+
 ## Admin accounts
 
 Admins cannot sign up on the website. Create one from `backend/` (it uses the Atlas database in `backend/.env`):

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
-import { Pencil, Star, UserCheck } from 'lucide-react'
+import { BriefcaseBusiness, Pencil, Star, UserCheck } from 'lucide-react'
 import { DocumentsSpot, VerifiedSpot } from '../components/illustrations/Spots'
 import Avatar from '../components/provider/Avatar'
 import VerifyEmailBanner from '../components/provider/VerifyEmailBanner'
@@ -60,8 +60,9 @@ function journeyFor(status, docs) {
     },
     {
       title: 'Start receiving jobs',
-      text: 'Job requests from customers in your districts will appear here.',
+      text: 'Job requests from customers in your districts appear on your jobs page.',
       state: verified ? 'current' : 'todo',
+      ...(verified && { action: { to: '/provider/jobs', label: 'Open my jobs' } }),
     },
   ]
 }
@@ -94,6 +95,7 @@ export default function ProviderDashboard() {
   const [labels, setLabels] = useState({})
   const [docs, setDocs] = useState(null)
   const [error, setError] = useState(null)
+  const [jobs, setJobs] = useState(null)
   const photoUrl = useMyPhoto(token, data?.provider.hasPhoto ? data.provider.photo.updatedAt : null)
 
   useEffect(() => {
@@ -112,6 +114,9 @@ export default function ProviderDashboard() {
       .catch(() => {})
     api('/providers/me/documents', { token })
       .then(setDocs)
+      .catch(() => {})
+    api('/bookings/jobs', { token })
+      .then(setJobs)
       .catch(() => {})
   }, [token, signOut, navigate])
 
@@ -166,6 +171,16 @@ export default function ProviderDashboard() {
           <span className="meter" aria-hidden="true">
             <span className="meter__fill" style={{ width: `${profilePercent}%` }} />
           </span>
+        </Link>
+        <Link to="/provider/jobs" className="stat-card stat-card--link">
+          <span className="stat-card__icon" aria-hidden="true">
+            <BriefcaseBusiness size={20} />
+          </span>
+          <p className="stat-card__label">Jobs</p>
+          <p className="stat-card__value">
+            {jobs?.requests.length ? `${jobs.requests.length} new request${jobs.requests.length === 1 ? '' : 's'}` : `${jobs?.upcoming.length ?? 0} upcoming`}
+          </p>
+          <p className="stat-card__sub">{jobs ? `${jobs.past.length} completed · See all` : 'See your jobs'}</p>
         </Link>
         <Link to="/provider/reviews" className="stat-card stat-card--link">
           <span className="stat-card__icon" aria-hidden="true">

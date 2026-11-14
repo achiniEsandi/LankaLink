@@ -8,6 +8,7 @@ import HomeScene from '../components/illustrations/HomeScene'
 import PasswordInput from '../components/PasswordInput'
 
 const HOME_BY_ROLE = {
+  customer: '/bookings',
   provider: '/provider/dashboard',
   admin: '/admin/providers',
 }

@@ -82,6 +82,15 @@ export const PERIODS = {
 
 export const PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
+// Booking lifecycle agreed in the team doc; checked_in/completed get GPS and photo proof from Ahmed's module
+export const BOOKING_STATUSES = ['requested', 'assigned', 'accepted', 'checked_in', 'completed', 'confirmed', 'cancelled'];
+// Statuses that occupy a provider's time slot
+export const ACTIVE_BOOKING_STATUSES = ['assigned', 'accepted', 'checked_in'];
+export const RECURRING_FREQUENCIES = { weekly: 7, fortnightly: 14, monthly: 28 };
+export const BOOKING_MAX_DAYS_AHEAD = 60;
+// How long an assigned provider has to accept before the job moves to the next match
+export const ASSIGNMENT_RESPONSE_HOURS = 24;
+
 // A provider is flagged for review when their average falls below this with enough reviews
 export const LOW_RATING_THRESHOLD = 3;
 export const LOW_RATING_MIN_REVIEWS = 3;

@@ -11,6 +11,7 @@ import {
   reviewDocument,
   suspendProvider,
 } from '../controllers/adminController.js';
+import { adminAssign, adminCandidates, adminListBookings } from '../controllers/bookingController.js';
 import { adminListReviews, adminSetHidden } from '../controllers/reviewController.js';
 import { protect, requireRole } from '../middleware/auth.js';
 
@@ -31,5 +32,9 @@ router.patch('/documents/:docId', reviewDocument);
 
 router.get('/reviews', adminListReviews);
 router.patch('/reviews/:reviewId', adminSetHidden);
+
+router.get('/bookings', adminListBookings);
+router.get('/bookings/:id/candidates', adminCandidates);
+router.post('/bookings/:id/assign', adminAssign);
 
 export default router;

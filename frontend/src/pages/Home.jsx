@@ -143,9 +143,14 @@ export default function Home() {
               <div className="service-card__body">
                 <h3>{s.label}</h3>
                 <p className="service-card__text">{s.description}</p>
-                <p className="service-card__price">
-                  From <strong>{formatRs(s.priceFrom)}</strong>
-                </p>
+                <div className="service-card__foot">
+                  <p className="service-card__price">
+                    From <strong>{formatRs(s.priceFrom)}</strong>
+                  </p>
+                  <Link to={`/book?service=${s.value}`} className="btn btn--ghost btn--small">
+                    Book
+                  </Link>
+                </div>
               </div>
             </article>
           ))}

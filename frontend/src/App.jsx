@@ -5,7 +5,12 @@ import RequireRole from './auth/RequireRole'
 import { useAuth } from './auth/useAuth'
 import Logo from './components/Logo'
 import SiteFooter from './components/SiteFooter'
+import BookService from './pages/BookService'
+import BookingDetail from './pages/BookingDetail'
 import Home from './pages/Home'
+import MyBookings from './pages/MyBookings'
+import ProviderJobs from './pages/ProviderJobs'
+import AdminBookings from './pages/admin/AdminBookings'
 import Professionals from './pages/Professionals'
 import Login from './pages/Login'
 import ProviderDashboard from './pages/ProviderDashboard'
@@ -24,7 +29,7 @@ import './App.css'
 function Header() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
-  const home = user?.role === 'admin' ? '/admin/providers' : user?.role === 'provider' ? '/provider/dashboard' : null
+  const home = { admin: '/admin/providers', provider: '/provider/dashboard', customer: '/bookings' }[user?.role] ?? null
 
   return (
     <header className="header">
@@ -42,7 +47,23 @@ function Header() {
               {user.role === 'admin' && (
                 <>
                   <NavLink to="/admin/providers">Providers</NavLink>
+                  <NavLink to="/admin/bookings">Bookings</NavLink>
                   <NavLink to="/admin/reviews">Reviews</NavLink>
+                </>
+              )}
+              {user.role === 'provider' && (
+                <NavLink to="/provider/jobs" className="nav__hide-sm">
+                  My jobs
+                </NavLink>
+              )}
+              {user.role === 'customer' && (
+                <>
+                  <NavLink to="/bookings" end className="nav__hide-sm">
+                    My bookings
+                  </NavLink>
+                  <NavLink to="/book" className="btn btn--ink btn--small">
+                    Book
+                  </NavLink>
                 </>
               )}
               <Link to={home ?? '/'} className="account-pill">
@@ -113,6 +134,46 @@ function App() {
             element={
               <RequireRole role="provider">
                 <ProviderProfileEdit />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/provider/jobs"
+            element={
+              <RequireRole role="provider">
+                <ProviderJobs />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/book"
+            element={
+              <RequireRole role="customer">
+                <BookService />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/bookings"
+            element={
+              <RequireRole role="customer">
+                <MyBookings />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/bookings/:id"
+            element={
+              <RequireRole role="customer">
+                <BookingDetail />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/bookings"
+            element={
+              <RequireRole role="admin">
+                <AdminBookings />
               </RequireRole>
             }
           />
