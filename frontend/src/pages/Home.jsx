@@ -12,7 +12,6 @@ import {
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { api } from '../api/client'
-import HomeScene from '../components/illustrations/HomeScene'
 import Photo from '../components/Photo'
 import { CONTACT, PLANS, formatRs } from '../lib/marketing'
 import { SERVICE_ICONS } from '../lib/serviceIcons'
@@ -34,17 +33,11 @@ const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior:
 
 export default function Home() {
   const [services, setServices] = useState([])
-  // Photo collage once real photos are in public/images; the illustration until then
-  const [hasPhotos, setHasPhotos] = useState(null)
 
   useEffect(() => {
     api('/providers/options')
       .then((o) => setServices(o.services))
       .catch(() => {})
-    const probe = new Image()
-    probe.onload = () => setHasPhotos(true)
-    probe.onerror = () => setHasPhotos(false)
-    probe.src = '/images/svc-house_cleaning.jpg'
   }, [])
 
   const byValue = Object.fromEntries(services.map((s) => [s.value, s]))
@@ -99,33 +92,37 @@ export default function Home() {
           </ul>
         </div>
 
-        {hasPhotos ? (
-          <div className="collage" aria-hidden="true">
+        <div className="collage-wrap" aria-hidden="true">
+          <div className="collage">
             {collage.map((value, i) => (
               <Photo
                 key={value}
                 name={`svc-${value}`}
                 alt={byValue[value]?.label ?? ''}
                 icon={SERVICE_ICONS[value]}
-                className={`collage__item collage__item--${i + 1}`}
+                className={`collage__item collage__item--${i + 1} tint--${value}`}
               />
             ))}
           </div>
-        ) : (
-          <div className="hero-art" aria-hidden="true">
-            {hasPhotos === false && (
-              <>
-                <HomeScene />
-                <p className="hero-art__chip hero-art__chip--top">
-                  <MapPin size={15} /> Nimal checked in · 9:02 am
-                </p>
-                <p className="hero-art__chip hero-art__chip--bottom">
-                  <Camera size={15} /> 6 photos added
-                </p>
-              </>
-            )}
+          <div className="float-card float-card--verified">
+            <span className="float-card__icon">
+              <ShieldCheck size={18} />
+            </span>
+            <span>
+              <strong>Verified professional</strong>
+              <small>NIC and police report checked</small>
+            </span>
           </div>
-        )}
+          <div className="float-card float-card--report">
+            <span className="float-card__icon float-card__icon--accent">
+              <Camera size={18} />
+            </span>
+            <span>
+              <strong>Visit completed · 10:01 am</strong>
+              <small>6 photos sent to Ayesha in London</small>
+            </span>
+          </div>
+        </div>
       </section>
 
       {/* ---------- Services ---------- */}

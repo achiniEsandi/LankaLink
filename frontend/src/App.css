@@ -3650,3 +3650,111 @@ img.photo {
   border-radius: 8px;
   overflow: hidden;
 }
+
+/* ---------- Hero: tinted panel with photo collage and floating cards ---------- */
+
+.hero-uc {
+  padding: 2.75rem;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 90% 10%, rgb(224 137 27 / 0.12), transparent 40%),
+    linear-gradient(135deg, #e9f5ef 0%, #f6faf7 55%, #fdf4e8 100%);
+}
+
+.hero-uc .picker {
+  border-color: transparent;
+}
+
+.collage-wrap {
+  position: relative;
+  padding: 1rem 0;
+}
+
+.collage__item {
+  box-shadow: 0 10px 30px -18px rgb(0 0 0 / 0.45);
+}
+
+.float-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px -12px rgb(0 0 0 / 0.35);
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.float-card strong {
+  display: block;
+  font-size: 0.88rem;
+}
+
+.float-card small {
+  display: block;
+  color: var(--muted);
+}
+
+.float-card__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.float-card__icon--accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.float-card--verified {
+  top: 0;
+  left: -1.5rem;
+}
+
+.float-card--report {
+  right: -1rem;
+  bottom: 0;
+}
+
+@media (max-width: 1100px) {
+  .float-card--verified {
+    left: 0.5rem;
+  }
+
+  .float-card--report {
+    right: 0.5rem;
+  }
+}
+
+@media (max-width: 860px) {
+  .hero-uc {
+    padding: 1.5rem 1.1rem;
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 520px) {
+  .float-card small {
+    display: none;
+  }
+
+  .float-card {
+    padding: 0.5rem 0.7rem;
+  }
+}
+
+/* Keep faces in frame when photos are cropped into tall tiles */
+img.collage__item--3 {
+  object-position: 78% center;
+}
+
+img.collage__item--1 {
+  object-position: 45% center;
+}
