@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
-import { ROLES } from '../constants/index.js';
+import { COUNTRY_CODES, LANGUAGES, ROLES } from '../constants/index.js';
 
 // Shared account record for customers, providers and admins
 const userSchema = new mongoose.Schema(
@@ -10,6 +10,15 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, required: true, trim: true },
     password: { type: String, required: true, minlength: 8, select: false },
     role: { type: String, enum: ROLES, required: true },
+
+    // Customer details (customers live abroad)
+    country: { type: String, uppercase: true, trim: true, enum: COUNTRY_CODES },
+    preferredLanguage: { type: String, enum: LANGUAGES, default: 'en' },
+    timeZone: { type: String, trim: true },
+
+    // Forgot password: only a hash of the emailed token is stored
+    passwordResetTokenHash: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
   },
   { timestamps: true },
 );
@@ -26,6 +35,8 @@ userSchema.methods.comparePassword = function (candidate) {
 userSchema.set('toJSON', {
   transform: (doc, ret) => {
     delete ret.password;
+    delete ret.passwordResetTokenHash;
+    delete ret.passwordResetExpires;
     delete ret.__v;
     return ret;
   },

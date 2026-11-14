@@ -24,6 +24,19 @@ export default function AuthProvider({ children }) {
     }
   }, [])
 
+  // Keep the stored user in step after a profile edit
+  const updateUser = useCallback((user) => {
+    setSession((current) => {
+      const next = { ...current, user }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+      } catch {
+        // Storage unavailable; the change still shows until reload
+      }
+      return next
+    })
+  }, [])
+
   const signOut = useCallback(() => {
     setSession({ token: null, user: null })
     try {
@@ -33,7 +46,10 @@ export default function AuthProvider({ children }) {
     }
   }, [])
 
-  const value = useMemo(() => ({ ...session, signIn, signOut }), [session, signIn, signOut])
+  const value = useMemo(
+    () => ({ ...session, signIn, signOut, updateUser }),
+    [session, signIn, signOut, updateUser],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

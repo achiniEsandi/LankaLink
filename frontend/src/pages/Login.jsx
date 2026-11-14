@@ -1,13 +1,10 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
+import { HOME_BY_ROLE } from '../auth/homeByRole'
 import { useAuth } from '../auth/useAuth'
 import Field from '../components/Field'
 import PasswordInput from '../components/PasswordInput'
-
-const HOME_BY_ROLE = {
-  provider: '/provider/dashboard',
-}
 
 export default function Login() {
   const navigate = useNavigate()
@@ -52,6 +49,9 @@ export default function Login() {
             <PasswordInput {...p} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
           )}
         </Field>
+        <p className="auth__forgot">
+          <Link to="/forgot-password">Forgot your password?</Link>
+        </p>
         {error && (
           <p className="alert alert--error" role="alert">
             {error}
@@ -61,9 +61,14 @@ export default function Login() {
           {submitting ? 'Logging in…' : 'Log in'}
         </button>
       </form>
-      <p className="auth__alt">
-        New here? <Link to="/provider/register">Sign up to work with LankaLink</Link>
-      </p>
+      <div className="auth__alt">
+        <p>
+          New here? <Link to="/signup">Create a customer account</Link>
+        </p>
+        <p className="muted small">
+          Looking for work? <Link to="/provider/register">Sign up as a service provider</Link>
+        </p>
+      </div>
     </div>
   )
 }

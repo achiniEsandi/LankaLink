@@ -13,8 +13,8 @@ export default function Home() {
           visit family. Every visit comes with a check-in and photos, so you know it was done.
         </p>
         <div className="home__actions">
-          <Link to="/provider/register" className="btn btn--primary">I want to work with LankaLink</Link>
-          <Link to="/login" className="btn btn--ghost">Log in</Link>
+          <Link to="/signup" className="btn btn--primary">Get started</Link>
+          <Link to="/services" className="btn btn--ghost">See services and prices</Link>
         </div>
       </section>
 

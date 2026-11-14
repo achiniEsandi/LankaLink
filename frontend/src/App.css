@@ -177,7 +177,8 @@
 }
 
 .field input,
-.field textarea {
+.field textarea,
+.field select {
   width: 100%;
   min-height: 46px;
   padding: 0.6rem 0.8rem;
@@ -188,15 +189,22 @@
   font: inherit;
 }
 
+.field input:disabled {
+  background: var(--sunken);
+  color: var(--muted);
+}
+
 .field input:focus,
-.field textarea:focus {
+.field textarea:focus,
+.field select:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
 .field--error input,
-.field--error textarea {
+.field--error textarea,
+.field--error select {
   border-color: var(--error);
 }
 
@@ -454,6 +462,23 @@
   border-left: 4px solid var(--error);
 }
 
+.alert--success {
+  background: var(--primary-soft);
+  color: var(--text);
+  border-left: 4px solid var(--primary);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 8rem;
+  gap: 0 1rem;
+}
+
+.field-row--3 {
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 0.75rem;
+}
+
 .actions {
   display: flex;
   gap: 0.75rem;
@@ -649,6 +674,35 @@ button.stepper__link:hover {
   border-top: 1px solid var(--border);
 }
 
+.auth__alt p {
+  margin: 0 0 0.4rem;
+}
+
+.auth__forgot {
+  margin: -0.75rem 0 1.25rem;
+  font-size: 0.9rem;
+}
+
+/* ---------- Customer forms ---------- */
+
+.page-form {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.page-form h1 {
+  margin: 0.75rem 0 0.25rem;
+}
+
+.page-form > .muted {
+  margin: 0 0 1.5rem;
+}
+
+.back-link {
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
 /* ---------- Dashboard ---------- */
 
 .dashboard__head {
@@ -789,6 +843,279 @@ button.stepper__link:hover {
 .profile dd {
   margin: 0;
   word-break: break-word;
+}
+
+.stack {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.panel__head .panel__title {
+  margin: 0;
+}
+
+.items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr auto;
+  gap: 0.75rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.item__icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 8px;
+  background: var(--il-sky);
+  color: var(--primary);
+}
+
+.item__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.item__meta,
+.item__text {
+  margin: 0.1rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  word-break: break-word;
+}
+
+.item__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.item__warn {
+  margin: 0.4rem 0 0;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  font-size: 0.85rem;
+}
+
+.item__actions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: flex-start;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty p {
+  margin: 0;
+}
+
+.empty strong {
+  color: var(--text);
+}
+
+.empty .btn {
+  margin-top: 0.75rem;
+}
+
+/* ---------- Services ---------- */
+
+.services__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.services__head h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+}
+
+.services__head .lead {
+  margin: 0;
+}
+
+.services__filter {
+  min-width: 16rem;
+  margin: 0;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 0 0 2.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.service-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.service-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.service-card__price {
+  margin: 0;
+  font-weight: 700;
+}
+
+.service-card__title {
+  margin: 0.25rem 0 0.25rem;
+  font-size: 1.1rem;
+}
+
+.service-card > .muted {
+  margin: 0 0 0.75rem;
+}
+
+.service-card__count {
+  margin: auto 0 0.5rem;
+  padding-top: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.service-card .link-btn:disabled {
+  color: var(--muted);
+  text-decoration: none;
+  cursor: default;
+}
+
+.provider-list {
+  width: 100%;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.provider-row {
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.provider-row p {
+  margin: 0;
+}
+
+.provider-row__name {
+  font-weight: 600;
+}
+
+.provider-row__bio {
+  margin-top: 0.25rem !important;
+  font-size: 0.9rem;
+}
+
+.verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--primary);
+}
+
+.packages h2 {
+  margin: 0 0 0.25rem;
+}
+
+.package-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 2.5rem;
+}
+
+.package {
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.package h3 {
+  margin: 0;
+}
+
+.package__price {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.package__list {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.92rem;
+}
+
+.package__list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0;
+}
+
+.package__list svg {
+  color: var(--primary);
 }
 
 /* ---------- Home ---------- */
@@ -1026,5 +1353,13 @@ button.stepper__link:hover {
 
   .actions .btn {
     flex: 1;
+  }
+
+  .field-row--3 {
+    grid-template-columns: 1fr;
+  }
+
+  .services__filter {
+    min-width: 100%;
   }
 }
