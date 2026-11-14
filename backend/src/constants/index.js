@@ -50,3 +50,16 @@ export const DISTRICTS = Object.values(PROVINCES).flat().sort();
 export const LAUNCH_DISTRICTS = ['Colombo', 'Gampaha'];
 
 export const PROVIDER_STATUSES = ['pending', 'approved', 'rejected', 'suspended'];
+
+// Verification documents; certificates are optional and may be uploaded more than once
+export const DOCUMENT_TYPES = {
+  nic_front: { label: 'NIC (front)', required: true, multiple: false },
+  nic_back: { label: 'NIC (back)', required: true, multiple: false },
+  police_report: { label: 'Police clearance report', required: true, multiple: false },
+  certificate: { label: 'Certificate or qualification', required: false, multiple: true },
+};
+
+export const DOCUMENT_STATUSES = ['pending', 'approved', 'rejected'];
+
+export const DOCUMENT_MAX_BYTES = 5 * 1024 * 1024;
+export const DOCUMENT_MAX_CERTIFICATES = 5;

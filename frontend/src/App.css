@@ -956,6 +956,272 @@ button.stepper__link:hover {
   color: var(--primary);
 }
 
+/* ---------- Documents ---------- */
+
+.documents {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.5rem 0 1rem;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.back-link:hover {
+  color: var(--text);
+}
+
+.documents__head h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.85rem;
+}
+
+.documents__head .lead {
+  margin: 0 0 0.75rem;
+}
+
+.privacy-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.doc-progress {
+  margin-bottom: 1.5rem;
+}
+
+.doc-progress p {
+  margin: 0 0 0.5rem;
+}
+
+.progress--always {
+  display: block;
+  margin-bottom: 0;
+}
+
+.success-banner {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius);
+  background: var(--primary-soft);
+  border-left: 4px solid var(--primary);
+}
+
+.success-banner svg {
+  flex: none;
+  color: var(--primary);
+}
+
+.success-banner p {
+  margin: 0.25rem 0 0;
+}
+
+.doc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.doc-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.doc-card__head {
+  display: flex;
+  gap: 0.85rem;
+}
+
+.doc-card__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  background: var(--il-sky);
+  color: var(--primary);
+}
+
+.doc-card__title {
+  margin: 0.1rem 0 0.25rem;
+  font-size: 1.05rem;
+}
+
+.doc-card__text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.tag--quiet {
+  background: var(--sunken);
+  color: var(--muted);
+}
+
+.dropzone {
+  padding: 1rem;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.dropzone--over {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.dropzone__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.dropzone__buttons .btn {
+  gap: 0.4rem;
+}
+
+.dropzone__hint {
+  margin: 0.6rem 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* The camera button only helps on phones and tablets */
+.only-touch {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .only-touch {
+    display: inline-flex;
+  }
+}
+
+.doc-file {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  background: var(--sunken);
+}
+
+.doc-preview {
+  flex: none;
+  width: 72px;
+  height: 56px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--surface);
+}
+
+.doc-preview--file {
+  display: grid;
+  place-items: center;
+  color: var(--primary);
+}
+
+.doc-file__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-file__name {
+  margin: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-file__meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.doc-file__reason {
+  margin: 0.3rem 0 0;
+  font-size: 0.88rem;
+}
+
+.doc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.doc-status--pending {
+  color: var(--accent);
+}
+
+.doc-status--approved {
+  color: var(--primary);
+}
+
+.doc-status--rejected {
+  color: var(--error);
+}
+
+.doc-file__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.link-btn.is-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: var(--surface);
+  color: var(--error);
+}
+
+.upload-progress {
+  font-size: 0.9rem;
+}
+
+.upload-progress span {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
 /* ---------- Small screens ---------- */
 
 @media (max-width: 860px) {
@@ -1007,6 +1273,10 @@ button.stepper__link:hover {
 
   .dashboard__art svg {
     width: 100px;
+  }
+
+  .doc-grid {
+    grid-template-columns: 1fr;
   }
 }
 

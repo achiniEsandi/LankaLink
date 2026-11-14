@@ -1,26 +1,57 @@
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 import { DocumentsSpot, VerifiedSpot } from '../components/illustrations/Spots'
 import { experienceLabel } from '../lib/provider'
 import { SERVICE_ICONS } from '../lib/serviceIcons'
 
+function documentsStep(verified, docs) {
+  const step = { title: 'Upload your documents' }
+  if (verified) return { ...step, text: 'Approved.', state: 'done' }
+
+  const rejected = docs?.documents.filter((d) => d.status === 'rejected').length ?? 0
+  if (rejected) {
+    return {
+      ...step,
+      text: `${rejected === 1 ? 'One document needs' : `${rejected} documents need`} a new upload. We have said why next to it.`,
+      state: 'current',
+      action: { label: 'Fix my documents', to: '/provider/documents' },
+    }
+  }
+  if (docs?.complete) {
+    return {
+      ...step,
+      text: 'All required documents uploaded. You can still add certificates.',
+      state: 'done',
+      action: { label: 'View my documents', to: '/provider/documents', ghost: true },
+    }
+  }
+
+  const required = docs?.types.filter((t) => t.required) ?? []
+  const done = required.length - (docs?.missing.length ?? required.length)
+  const stillNeeded = required.filter((t) => docs?.missing.includes(t.value)).map((t) => t.label)
+  return {
+    ...step,
+    text: done
+      ? `${done} of ${required.length} uploaded. Still needed: ${stillNeeded.join(', ')}.`
+      : 'A clear photo of your NIC (both sides) and your police clearance report.',
+    state: 'current',
+    action: { label: done ? 'Continue uploading' : 'Upload documents', to: '/provider/documents' },
+  }
+}
+
 // Where the provider is in the journey from sign-up to receiving jobs
-function journeyFor(status) {
+function journeyFor(status, docs) {
   const verified = status === 'approved'
+  const docsStep = documentsStep(verified, docs)
   return [
     { title: 'Create your account', text: 'Done. Thank you for signing up.', state: 'done' },
-    {
-      title: 'Upload your documents',
-      text: 'A clear photo of your NIC (both sides) and your police clearance report.',
-      state: verified ? 'done' : 'current',
-      action: verified ? null : 'Document upload opens here soon',
-    },
+    docsStep,
     {
       title: 'We check your details',
       text: 'Usually within 2 working days. We may call you to confirm a few things.',
-      state: verified ? 'done' : 'todo',
+      state: verified ? 'done' : docsStep.state === 'done' ? 'current' : 'todo',
     },
     {
       title: 'Start receiving jobs',
@@ -49,6 +80,7 @@ export default function ProviderDashboard() {
   const { token, signOut } = useAuth()
   const [data, setData] = useState(null)
   const [labels, setLabels] = useState({})
+  const [docs, setDocs] = useState(null)
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -65,6 +97,9 @@ export default function ProviderDashboard() {
     api('/providers/options')
       .then((o) => setLabels(Object.fromEntries(o.services.map((s) => [s.value, s.label]))))
       .catch(() => {})
+    api('/providers/me/documents', { token })
+      .then(setDocs)
+      .catch(() => {})
   }, [token, signOut, navigate])
 
   if (error) return <p className="alert alert--error">{error}</p>
@@ -73,7 +108,7 @@ export default function ProviderDashboard() {
   const { user, provider } = data
   const firstName = user.name.split(' ')[0]
   const notice = STATUS_NOTICE[provider.status]
-  const journey = journeyFor(provider.status)
+  const journey = journeyFor(provider.status, docs)
 
   return (
     <div className="dashboard">
@@ -111,9 +146,9 @@ export default function ProviderDashboard() {
                   </p>
                   <p className="journey__text">{s.text}</p>
                   {s.action && (
-                    <button type="button" className="btn btn--primary btn--small" disabled>
-                      {s.action}
-                    </button>
+                    <Link to={s.action.to} className={`btn btn--small ${s.action.ghost ? 'btn--ghost' : 'btn--primary'}`}>
+                      {s.action.label}
+                    </Link>
                   )}
                 </div>
               </li>

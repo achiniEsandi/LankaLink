@@ -5,6 +5,7 @@ import Logo from './components/Logo'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import ProviderDashboard from './pages/ProviderDashboard'
+import ProviderDocuments from './pages/ProviderDocuments'
 import ProviderRegister from './pages/ProviderRegister'
 import './App.css'
 
@@ -58,6 +59,14 @@ function App() {
             element={
               <RequireRole role="provider">
                 <ProviderDashboard />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/provider/documents"
+            element={
+              <RequireRole role="provider">
+                <ProviderDocuments />
               </RequireRole>
             }
           />

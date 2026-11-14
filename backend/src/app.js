@@ -1,6 +1,8 @@
 import cors from 'cors';
 import express from 'express';
 import mongoose from 'mongoose';
+import multer from 'multer';
+import { uploadErrorMessage } from './middleware/upload.js';
 import authRoutes from './routes/auth.js';
 import healthRoutes from './routes/health.js';
 import providerRoutes from './routes/providers.js';
@@ -25,6 +27,10 @@ app.use((err, req, res, next) => {
   }
   if (err.code === 11000) {
     return res.status(409).json({ message: `${Object.keys(err.keyValue ?? {}).join(', ') || 'Value'} already exists` });
+  }
+  if (err instanceof multer.MulterError) {
+    const { status, message } = uploadErrorMessage(err);
+    return res.status(status).json({ message });
   }
   if (err.type === 'entity.parse.failed') {
     return res.status(400).json({ message: 'Invalid JSON body' });
