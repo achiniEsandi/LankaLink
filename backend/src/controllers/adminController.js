@@ -65,7 +65,7 @@ export async function listProviders(req, res) {
       .sort({ createdAt: status === 'pending' ? 1 : -1 })
       .skip((page - 1) * PAGE_SIZE)
       .limit(PAGE_SIZE)
-      .populate('user', 'name email phone'),
+      .populate('user', 'name email phone emailVerified'),
     Provider.aggregate([{ $group: { _id: '$status', n: { $sum: 1 } } }]),
   ]);
 
@@ -81,6 +81,7 @@ export async function listProviders(req, res) {
         name: p.user?.name,
         email: p.user?.email,
         phone: p.user?.phone,
+        emailVerified: Boolean(p.user?.emailVerified),
         nic: p.nic,
         services: p.services,
         serviceAreas: p.serviceAreas,
@@ -89,7 +90,7 @@ export async function listProviders(req, res) {
         photoVersion: p.photo?.updatedAt?.getTime() ?? null,
         createdAt: p.createdAt,
         documents: summary,
-        readyForReview: p.status === 'pending' && readyForReview(summary),
+        readyForReview: p.status === 'pending' && readyForReview(summary) && Boolean(p.user?.emailVerified),
       };
     }),
     counts,
@@ -102,7 +103,7 @@ export async function listProviders(req, res) {
 export async function getProvider(req, res) {
   const provider = await findProvider(req.params.id);
   await provider.populate([
-    { path: 'user', select: 'name email phone createdAt' },
+    { path: 'user', select: 'name email phone createdAt emailVerified emailVerifiedAt' },
     { path: 'history.by', select: 'name' },
   ]);
   const documents = await ProviderDocument.find({ provider: provider._id })
@@ -116,7 +117,10 @@ export async function getProvider(req, res) {
     documents,
     documentTypes: Object.entries(DOCUMENT_TYPES).map(([value, t]) => ({ value, ...t })),
     summary,
-    canApprove: ['pending', 'rejected'].includes(provider.status) && summary.approved === summary.required,
+    canApprove:
+      ['pending', 'rejected'].includes(provider.status) &&
+      summary.approved === summary.required &&
+      Boolean(provider.user?.emailVerified),
   });
 }
 
@@ -145,6 +149,9 @@ export async function reviewDocument(req, res) {
 export async function approveProvider(req, res) {
   const provider = await findProvider(req.params.id);
   if (!['pending', 'rejected'].includes(provider.status)) throw httpError(409, `This provider is already ${provider.status}`);
+
+  const user = await User.findById(provider.user).select('emailVerified');
+  if (!user?.emailVerified) throw httpError(409, 'This provider has not confirmed their email address yet');
 
   const docs = await ProviderDocument.find({ provider: provider._id, type: { $in: REQUIRED_DOCUMENT_TYPES }, status: 'approved' });
   const missing = REQUIRED_DOCUMENT_TYPES.filter((type) => !docs.some((d) => d.type === type));

@@ -5,7 +5,9 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 
 process.env.JWT_SECRET = 'test-secret';
+process.env.NODE_ENV = 'test';
 const { default: app } = await import('../src/app.js');
+const { clearAllLimits } = await import('../src/utils/rateLimiter.js');
 const { default: Provider } = await import('../src/models/Provider.js');
 const { default: ProviderDocument } = await import('../src/models/ProviderDocument.js');
 const { default: User } = await import('../src/models/User.js');
@@ -17,7 +19,8 @@ let mongod;
 let counter = 0;
 let adminToken;
 
-async function registerProvider(extra = {}) {
+// Providers confirm their email by default; pass { verified: false } to skip that
+async function registerProvider({ verified = true, ...extra } = {}) {
   counter += 1;
   const res = await request(app)
     .post('/api/providers/register')
@@ -32,6 +35,7 @@ async function registerProvider(extra = {}) {
       ...extra,
     });
   assert.equal(res.status, 201);
+  if (verified) await User.updateOne({ _id: res.body.user._id }, { emailVerified: true });
   return { token: res.body.token, id: res.body.provider._id };
 }
 
@@ -62,6 +66,7 @@ after(async () => {
 });
 
 beforeEach(async () => {
+  clearAllLimits();
   await Promise.all([User.deleteMany({}), Provider.deleteMany({}), ProviderDocument.deleteMany({})]);
   await mongoose.connection.db.collection('uploads.files').deleteMany({});
   await mongoose.connection.db.collection('uploads.chunks').deleteMany({});
@@ -127,6 +132,23 @@ describe('verification', () => {
 
     const pub = await request(app).get(`/api/providers/${id}/public`);
     assert.equal(pub.status, 200);
+  });
+
+  it('will not approve a provider whose email is not confirmed', async () => {
+    const { token, id } = await registerProvider({ verified: false });
+    await approveDocs(await uploadAll(token));
+
+    const detail = await admin('get', `/providers/${id}`);
+    assert.equal(detail.body.canApprove, false);
+    assert.equal(detail.body.user.emailVerified, false);
+
+    const res = await admin('post', `/providers/${id}/approve`);
+    assert.equal(res.status, 409);
+    assert.match(res.body.message, /email/);
+
+    const list = await admin('get', '/providers?status=pending');
+    assert.equal(list.body.providers[0].emailVerified, false);
+    assert.equal(list.body.providers[0].readyForReview, false);
   });
 
   it('requires a reason to reject a document and shows it to the provider', async () => {

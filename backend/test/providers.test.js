@@ -5,7 +5,9 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 
 process.env.JWT_SECRET = 'test-secret';
+process.env.NODE_ENV = 'test';
 const { default: app } = await import('../src/app.js');
+const { clearAllLimits } = await import('../src/utils/rateLimiter.js');
 const { default: Provider } = await import('../src/models/Provider.js');
 const { default: User } = await import('../src/models/User.js');
 
@@ -35,6 +37,7 @@ after(async () => {
 });
 
 beforeEach(async () => {
+  clearAllLimits();
   await Promise.all([User.deleteMany({}), Provider.deleteMany({})]);
 });
 

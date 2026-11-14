@@ -37,6 +37,9 @@ try {
     const user = existing ?? new User({ email, role: 'admin', phone: '-' });
     user.name = name;
     user.password = password;
+    // Admins are created by someone with database access, so their email is trusted
+    user.emailVerified = true;
+    user.emailVerifiedAt ??= new Date();
     await user.save();
     console.log(`${existing ? 'Password reset for' : 'Created'} admin ${user.email}`);
     if (!process.env.ADMIN_PASSWORD) console.log(`Password (shown once, store it safely): ${password}`);

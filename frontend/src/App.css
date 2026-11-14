@@ -2085,6 +2085,88 @@ button.stepper__link:hover {
   background: var(--primary-soft);
 }
 
+/* ---------- Email verification ---------- */
+
+.verify-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--accent);
+  background: var(--accent-soft);
+}
+
+.verify-banner > svg {
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--accent);
+}
+
+.verify-banner__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.verify-banner__text p {
+  margin: 0.25rem 0 0;
+}
+
+.verify-banner__ok {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.verify-banner .btn {
+  flex: none;
+}
+
+.verify {
+  max-width: 460px;
+  margin: 3rem auto;
+  text-align: center;
+}
+
+.verify h1 {
+  margin: 0.75rem 0 0.5rem;
+}
+
+.verify .muted {
+  margin: 0 0 1.5rem;
+}
+
+.verify__icon--ok {
+  color: var(--primary);
+}
+
+.verify__icon--warn {
+  color: var(--accent);
+}
+
+.verify__icon--error {
+  color: var(--error);
+}
+
+.email-state {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.email-state--ok {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.email-state--no {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
 /* ---------- Small screens ---------- */
 
 @media (max-width: 860px) {
@@ -2192,6 +2274,10 @@ button.stepper__link:hover {
 
   .btn--danger-ghost {
     margin-left: 0;
+  }
+
+  .verify-banner {
+    flex-wrap: wrap;
   }
 }
 

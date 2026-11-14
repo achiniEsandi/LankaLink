@@ -34,6 +34,7 @@ function ProviderRow({ p, token, labels }) {
           <p className="admin-row__name">
             {p.name}
             {p.readyForReview && <span className="tag">Ready to review</span>}
+            {!p.emailVerified && <span className="tag tag--quiet">Email not confirmed</span>}
           </p>
           <p className="admin-row__meta">
             {p.email} · NIC {p.nic}

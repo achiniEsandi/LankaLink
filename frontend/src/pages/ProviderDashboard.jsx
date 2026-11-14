@@ -5,6 +5,7 @@ import { useAuth } from '../auth/useAuth'
 import { Pencil } from 'lucide-react'
 import { DocumentsSpot, VerifiedSpot } from '../components/illustrations/Spots'
 import Avatar from '../components/provider/Avatar'
+import VerifyEmailBanner from '../components/provider/VerifyEmailBanner'
 import { summariseAvailability } from '../lib/availability'
 import { experienceLabel } from '../lib/provider'
 import useMyPhoto from '../lib/useMyPhoto'
@@ -133,6 +134,8 @@ export default function ProviderDashboard() {
         </div>
         <div className="dashboard__art">{provider.status === 'approved' ? <VerifiedSpot /> : <DocumentsSpot />}</div>
       </header>
+
+      {!user.emailVerified && <VerifyEmailBanner email={user.email} token={token} />}
 
       {notice && (
         <div className={`alert alert--${notice.tone}`} role="status">

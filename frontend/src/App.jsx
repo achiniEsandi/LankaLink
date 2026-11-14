@@ -8,6 +8,7 @@ import ProviderDashboard from './pages/ProviderDashboard'
 import ProviderDocuments from './pages/ProviderDocuments'
 import ProviderProfileEdit from './pages/ProviderProfileEdit'
 import ProviderPublicProfile from './pages/ProviderPublicProfile'
+import VerifyEmail from './pages/VerifyEmail'
 import AdminProviderDetail from './pages/admin/AdminProviderDetail'
 import AdminProviders from './pages/admin/AdminProviders'
 import ProviderRegister from './pages/ProviderRegister'
@@ -84,6 +85,7 @@ function App() {
             }
           />
           <Route path="/providers/:id" element={<ProviderPublicProfile />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route
             path="/admin/providers"
             element={

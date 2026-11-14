@@ -32,7 +32,8 @@ export default function Login() {
       signIn(token, user)
       navigate(location.state?.from || HOME_BY_ROLE[user.role] || '/', { replace: true })
     } catch (err) {
-      setError(err.status === 401 ? 'That email and password do not match. Please try again.' : err.message)
+      // The server explains lockouts and remaining attempts, so show its message as is
+      setError(err.message)
     } finally {
       setSubmitting(false)
     }

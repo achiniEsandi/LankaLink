@@ -80,6 +80,15 @@ npm run dev
 >
 > `npm test` in `backend/` uses a temporary in-memory MongoDB, so tests never touch the Atlas data.
 
+## Email verification
+
+New providers get an email with a confirmation link (valid 24 hours). Admins cannot approve a provider until their email is confirmed.
+
+- **Development:** leave `BREVO_API_KEY` empty. The email, including the link, is printed in the backend terminal. Open the link in the browser to confirm.
+- **Real emails:** create a free [Brevo](https://www.brevo.com/) account, verify the sender address you want to send from, create an API key, and set `BREVO_API_KEY` and `EMAIL_FROM` in `backend/.env`. Restart the backend.
+
+Logins are limited to 5 wrong passwords per account per 15 minutes (plus a per-device cap), and sign-ups to 10 per device per hour. Limits are kept in memory and reset when the backend restarts.
+
 ## Admin accounts
 
 Admins cannot sign up on the website. Create one from `backend/` (it uses the Atlas database in `backend/.env`):

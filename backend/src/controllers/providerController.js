@@ -11,7 +11,12 @@ import {
 import Provider, { NIC_PATTERN } from '../models/Provider.js';
 import User from '../models/User.js';
 import httpError from '../utils/httpError.js';
+import { createLimiter, minutesLeft } from '../utils/rateLimiter.js';
 import { signToken } from '../utils/token.js';
+import { sendVerificationEmail } from '../utils/verificationEmail.js';
+
+// Sign-up attempts per device per hour
+const registrations = createLimiter({ max: 10, windowMs: 60 * 60 * 1000 });
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // Sri Lankan mobile: 07XXXXXXXX or +947XXXXXXXX
@@ -46,6 +51,15 @@ export function getRegistrationOptions(req, res) {
 }
 
 export async function registerProvider(req, res) {
+  const key = `register-ip:${req.ip}`;
+  const blocked = registrations.blockedFor(key);
+  if (blocked) {
+    const err = httpError(429, `Too many sign-ups from this device. Try again in ${minutesLeft(blocked)} minutes.`);
+    err.retryAfter = Math.ceil(blocked / 1000);
+    throw err;
+  }
+  registrations.hit(key);
+
   const body = req.body ?? {};
   const errors = validateRegistration(body);
   if (Object.keys(errors).length) throw httpError(400, 'Validation failed', errors);
@@ -79,5 +93,16 @@ export async function registerProvider(req, res) {
     throw err;
   }
 
-  res.status(201).json({ token: signToken(user), user, provider });
+  // A failed email must not lose the sign-up; the provider can resend from the dashboard
+  let emailSent = true;
+  try {
+    const token = user.issueEmailVerification();
+    await user.save();
+    await sendVerificationEmail(user, token);
+  } catch (err) {
+    emailSent = false;
+    console.error('Verification email failed:', err.message);
+  }
+
+  res.status(201).json({ token: signToken(user), user, provider, emailSent });
 }

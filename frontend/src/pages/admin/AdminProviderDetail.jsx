@@ -247,7 +247,14 @@ export default function AdminProviderDetail() {
 
       {['pending', 'rejected'].includes(provider.status) && !canApprove && (
         <p className="muted small">
-          To approve, first approve: {missingApprovals.map((t) => t.label).join(', ')}.
+          Before approving:{' '}
+          {[
+            missingApprovals.length && `approve ${missingApprovals.map((t) => t.label).join(', ')}`,
+            !user.emailVerified && 'the provider must confirm their email address',
+          ]
+            .filter(Boolean)
+            .join('; ')}
+          .
         </p>
       )}
 
@@ -318,6 +325,9 @@ export default function AdminProviderDetail() {
               <dt>Email</dt>
               <dd>
                 <a href={`mailto:${user.email}`}>{user.email}</a>
+                <span className={`email-state email-state--${user.emailVerified ? 'ok' : 'no'}`}>
+                  {user.emailVerified ? 'Confirmed' : 'Not confirmed yet'}
+                </span>
               </dd>
               <dt>Work</dt>
               <dd>{provider.services.map((s) => labels[s] ?? s).join(', ')}</dd>
