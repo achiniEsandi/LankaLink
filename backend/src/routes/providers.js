@@ -15,6 +15,7 @@ import {
   uploadMyPhoto,
 } from '../controllers/profileController.js';
 import { getRegistrationOptions, registerProvider } from '../controllers/providerController.js';
+import { listMyReviews, listProviderReviews, replyToReview } from '../controllers/reviewController.js';
 import { protect, requireRole } from '../middleware/auth.js';
 import { documentUpload } from '../middleware/upload.js';
 
@@ -36,8 +37,12 @@ router.post('/me/documents', providerOnly, documentUpload, uploadMyDocument);
 router.get('/me/documents/:id/file', providerOnly, downloadMyDocument);
 router.delete('/me/documents/:id', providerOnly, deleteMyDocument);
 
+router.get('/me/reviews', providerOnly, listMyReviews);
+router.post('/me/reviews/:reviewId/reply', providerOnly, replyToReview);
+
 // Public pages for customers; /me routes above take precedence
 router.get('/:id/public', getPublicProfile);
 router.get('/:id/photo', getPublicPhoto);
+router.get('/:id/reviews', listProviderReviews);
 
 export default router;

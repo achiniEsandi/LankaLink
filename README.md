@@ -106,6 +106,18 @@ New providers get an email with a confirmation link (valid 24 hours). Admins can
 
 Logins are limited to 5 wrong passwords per account per 15 minutes (plus a per-device cap), and sign-ups to 10 per device per hour. Limits are kept in memory and reset when the backend restarts.
 
+## Ratings and reviews (booking contract)
+
+Customers can review a provider once per booking, after the booking is confirmed. Reviews read the `bookings` collection directly, so the booking module must store each booking with:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `customer` | ObjectId of a `User` (role `customer`) | Who booked |
+| `provider` | ObjectId of a `Provider` | Who did the job |
+| `status` | string | Reviews open when this is `confirmed` |
+
+The booking screen links customers to `/reviews/new?booking=<booking id>` to leave a review. Ratings are recalculated automatically; admins can hide reviews (they then stop counting), and providers averaging under 3 stars after 3 reviews are flagged in the admin list.
+
 ## Admin accounts
 
 Admins cannot sign up on the website. Create one from `backend/` (it uses the Atlas database in `backend/.env`):

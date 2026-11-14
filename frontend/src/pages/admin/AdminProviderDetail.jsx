@@ -5,6 +5,7 @@ import { api } from '../../api/client'
 import { useAuth } from '../../auth/useAuth'
 import ReasonDialog from '../../components/admin/ReasonDialog'
 import StatusChip from '../../components/admin/StatusChip'
+import { Stars } from '../../components/reviews/Stars'
 import Avatar from '../../components/provider/Avatar'
 import { DAY_LABELS, PERIOD_LABELS } from '../../lib/availability'
 import { experienceLabel } from '../../lib/provider'
@@ -198,6 +199,17 @@ export default function AdminProviderDetail() {
           <p className="muted">
             Applied {when(provider.createdAt)}
             {provider.approvedAt && provider.status !== 'pending' ? ` · Approved ${when(provider.approvedAt)}` : ''}
+          </p>
+          <p className="detail-head__rating">
+            {provider.rating?.count ? (
+              <>
+                <Stars value={provider.rating.average} size={15} /> {provider.rating.average.toFixed(1)} from{' '}
+                {provider.rating.count} review{provider.rating.count === 1 ? '' : 's'} ·{' '}
+                <Link to={`/admin/reviews?provider=${provider._id}`}>See reviews</Link>
+              </>
+            ) : (
+              <span className="muted">No reviews yet</span>
+            )}
           </p>
         </div>
         <StatusChip status={provider.status} />

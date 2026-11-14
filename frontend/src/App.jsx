@@ -12,7 +12,10 @@ import ProviderDashboard from './pages/ProviderDashboard'
 import ProviderDocuments from './pages/ProviderDocuments'
 import ProviderProfileEdit from './pages/ProviderProfileEdit'
 import ProviderPublicProfile from './pages/ProviderPublicProfile'
+import ProviderReviews from './pages/ProviderReviews'
 import VerifyEmail from './pages/VerifyEmail'
+import WriteReview from './pages/WriteReview'
+import AdminReviews from './pages/admin/AdminReviews'
 import AdminProviderDetail from './pages/admin/AdminProviderDetail'
 import AdminProviders from './pages/admin/AdminProviders'
 import ProviderRegister from './pages/ProviderRegister'
@@ -36,7 +39,12 @@ function Header() {
         <nav className="nav" aria-label="Main">
           {user ? (
             <>
-              {user.role === 'admin' && <NavLink to="/admin/providers">Providers</NavLink>}
+              {user.role === 'admin' && (
+                <>
+                  <NavLink to="/admin/providers">Providers</NavLink>
+                  <NavLink to="/admin/reviews">Reviews</NavLink>
+                </>
+              )}
               <Link to={home ?? '/'} className="account-pill">
                 <span className="account-pill__avatar" aria-hidden="true">
                   {user.name.trim()[0]?.toUpperCase()}
@@ -110,6 +118,30 @@ function App() {
           />
           <Route path="/providers/:id" element={<ProviderPublicProfile />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route
+            path="/provider/reviews"
+            element={
+              <RequireRole role="provider">
+                <ProviderReviews />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/reviews/new"
+            element={
+              <RequireRole role="customer">
+                <WriteReview />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/reviews"
+            element={
+              <RequireRole role="admin">
+                <AdminReviews />
+              </RequireRole>
+            }
+          />
           <Route
             path="/admin/providers"
             element={

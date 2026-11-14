@@ -145,8 +145,8 @@ export async function getPublicProfile(req, res) {
       photoVersion: provider.photo?.updatedAt?.getTime() ?? null,
       verified: true,
       memberSince: provider.user.createdAt,
-      rating: null,
-      reviewCount: 0,
+      rating: provider.rating?.average ?? null,
+      reviewCount: provider.rating?.count ?? 0,
     },
   });
 }

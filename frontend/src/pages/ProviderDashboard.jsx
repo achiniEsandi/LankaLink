@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
-import { Pencil } from 'lucide-react'
+import { Pencil, Star, UserCheck } from 'lucide-react'
 import { DocumentsSpot, VerifiedSpot } from '../components/illustrations/Spots'
 import Avatar from '../components/provider/Avatar'
 import VerifyEmailBanner from '../components/provider/VerifyEmailBanner'
@@ -66,6 +66,13 @@ function journeyFor(status, docs) {
   ]
 }
 
+const STATUS_LABEL = {
+  pending: 'In review',
+  approved: 'Verified',
+  rejected: 'Needs changes',
+  suspended: 'Paused',
+}
+
 const STATUS_NOTICE = {
   rejected: {
     tone: 'error',
@@ -120,6 +127,10 @@ export default function ProviderDashboard() {
     !provider.availability?.length && 'Set the days and times you can work',
     !provider.bio && 'Write a short introduction for customers',
   ].filter(Boolean)
+  // Five things make a complete profile: the three above plus services and districts
+  const profilePercent = Math.round(((5 - nudges.length) / 5) * 100)
+  const required = docs?.types.filter((t) => t.required).length ?? 3
+  const uploaded = required - (docs?.missing.length ?? required)
 
   return (
     <div className="dashboard">
@@ -134,6 +145,43 @@ export default function ProviderDashboard() {
         </div>
         <div className="dashboard__art">{provider.status === 'approved' ? <VerifiedSpot /> : <DocumentsSpot />}</div>
       </header>
+
+      <div className="stat-cards">
+        <div className="stat-card">
+          <span className="stat-card__icon" aria-hidden="true">
+            <UserCheck size={20} />
+          </span>
+          <p className="stat-card__label">Application</p>
+          <p className="stat-card__value">{STATUS_LABEL[provider.status]}</p>
+          <p className="stat-card__sub">
+            {provider.status === 'approved' ? 'You can receive jobs' : `Documents ${uploaded} of ${required} uploaded`}
+          </p>
+        </div>
+        <Link to="/provider/profile" className="stat-card stat-card--link">
+          <span className="stat-card__icon" aria-hidden="true">
+            <Pencil size={20} />
+          </span>
+          <p className="stat-card__label">Profile</p>
+          <p className="stat-card__value">{profilePercent}% complete</p>
+          <span className="meter" aria-hidden="true">
+            <span className="meter__fill" style={{ width: `${profilePercent}%` }} />
+          </span>
+        </Link>
+        <Link to="/provider/reviews" className="stat-card stat-card--link">
+          <span className="stat-card__icon" aria-hidden="true">
+            <Star size={20} />
+          </span>
+          <p className="stat-card__label">Rating</p>
+          <p className="stat-card__value">
+            {provider.rating?.count ? `${provider.rating.average.toFixed(1)} ★` : 'No reviews yet'}
+          </p>
+          <p className="stat-card__sub">
+            {provider.rating?.count
+              ? `${provider.rating.count} review${provider.rating.count === 1 ? '' : 's'} · See all`
+              : 'Reviews appear after confirmed jobs'}
+          </p>
+        </Link>
+      </div>
 
       {!user.emailVerified && <VerifyEmailBanner email={user.email} token={token} />}
 

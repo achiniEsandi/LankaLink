@@ -11,6 +11,7 @@ import {
   reviewDocument,
   suspendProvider,
 } from '../controllers/adminController.js';
+import { adminListReviews, adminSetHidden } from '../controllers/reviewController.js';
 import { protect, requireRole } from '../middleware/auth.js';
 
 const router = Router();
@@ -27,5 +28,8 @@ router.delete('/providers/:id', removeProvider);
 
 router.get('/documents/:docId/file', getDocumentFile);
 router.patch('/documents/:docId', reviewDocument);
+
+router.get('/reviews', adminListReviews);
+router.patch('/reviews/:reviewId', adminSetHidden);
 
 export default router;

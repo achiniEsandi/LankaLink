@@ -1,9 +1,17 @@
 import mongoose from 'mongoose';
-import { DOCUMENT_TYPES, PROVIDER_STATUSES, REQUIRED_DOCUMENT_TYPES } from '../constants/index.js';
+import {
+  DOCUMENT_TYPES,
+  LOW_RATING_MIN_REVIEWS,
+  LOW_RATING_THRESHOLD,
+  PROVIDER_STATUSES,
+  REQUIRED_DOCUMENT_TYPES,
+} from '../constants/index.js';
 import Provider from '../models/Provider.js';
 import ProviderDocument from '../models/ProviderDocument.js';
+import Review from '../models/Review.js';
 import User from '../models/User.js';
 import { deleteFile, sendFile } from '../utils/fileStorage.js';
+import { isLowRated } from '../utils/ratings.js';
 import httpError from '../utils/httpError.js';
 
 const PAGE_SIZE = 20;
@@ -50,6 +58,10 @@ export async function listProviders(req, res) {
   }
   if (district) filter.serviceAreas = district;
   if (service) filter.services = service;
+  if (req.query.rating === 'low') {
+    filter['rating.count'] = { $gte: LOW_RATING_MIN_REVIEWS };
+    filter['rating.average'] = { $lt: LOW_RATING_THRESHOLD };
+  }
 
   const term = String(q).trim().slice(0, 100);
   if (term) {
@@ -91,6 +103,8 @@ export async function listProviders(req, res) {
         createdAt: p.createdAt,
         documents: summary,
         readyForReview: p.status === 'pending' && readyForReview(summary) && Boolean(p.user?.emailVerified),
+        rating: p.rating,
+        lowRated: isLowRated(p.rating),
       };
     }),
     counts,
@@ -213,6 +227,7 @@ export async function removeProvider(req, res) {
   if (provider.photo?.storedName) await deleteFile(owner, provider.photo.storedName);
 
   await ProviderDocument.deleteMany({ provider: provider._id });
+  await Review.deleteMany({ provider: provider._id });
   await Provider.deleteOne({ _id: provider._id });
   await User.deleteOne({ _id: provider.user, role: 'provider' });
   res.status(204).end();

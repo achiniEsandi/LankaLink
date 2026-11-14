@@ -7,6 +7,7 @@ import adminRoutes from './routes/admin.js';
 import authRoutes from './routes/auth.js';
 import healthRoutes from './routes/health.js';
 import providerRoutes from './routes/providers.js';
+import reviewRoutes from './routes/reviews.js';
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/providers', providerRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });

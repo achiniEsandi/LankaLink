@@ -82,6 +82,10 @@ export const PERIODS = {
 
 export const PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
+// A provider is flagged for review when their average falls below this with enough reviews
+export const LOW_RATING_THRESHOLD = 3;
+export const LOW_RATING_MIN_REVIEWS = 3;
+
 export const REQUIRED_DOCUMENT_TYPES = Object.entries(DOCUMENT_TYPES)
   .filter(([, t]) => t.required)
   .map(([type]) => type);

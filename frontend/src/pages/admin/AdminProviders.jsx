@@ -35,6 +35,7 @@ function ProviderRow({ p, token, labels }) {
             {p.name}
             {p.readyForReview && <span className="tag">Ready to review</span>}
             {!p.emailVerified && <span className="tag tag--quiet">Email not confirmed</span>}
+            {p.lowRated && <span className="tag tag--danger">Low rating</span>}
           </p>
           <p className="admin-row__meta">
             {p.email} · NIC {p.nic}
@@ -67,6 +68,7 @@ export default function AdminProviders() {
   const status = params.get('status') || 'pending'
   const district = params.get('district') || ''
   const service = params.get('service') || ''
+  const rating = params.get('rating') || ''
   const page = Number(params.get('page')) || 1
   const [query, setQuery] = useState(params.get('q') || '')
   const [data, setData] = useState(null)
@@ -102,20 +104,21 @@ export default function AdminProviders() {
     if (q) search.set('q', q)
     if (district) search.set('district', district)
     if (service) search.set('service', service)
+    if (rating) search.set('rating', rating)
     api(`/admin/providers?${search}`, { token })
       .then((d) => {
         setData(d)
         setError(null)
       })
       .catch((err) => setError(err.message))
-  }, [token, status, q, district, service, page])
+  }, [token, status, q, district, service, rating, page])
 
   useEffect(() => {
     api('/providers/options').then(setOptions).catch(() => {})
   }, [])
 
   const labels = Object.fromEntries((options?.services ?? []).map((s) => [s.value, s.label]))
-  const filtered = Boolean(q || district || service)
+  const filtered = Boolean(q || district || service || rating)
 
   return (
     <div className="admin">
@@ -164,6 +167,10 @@ export default function AdminProviders() {
               {s.label}
             </option>
           ))}
+        </select>
+        <select value={rating} onChange={(e) => setParam('rating', e.target.value)} aria-label="Filter by rating">
+          <option value="">Any rating</option>
+          <option value="low">Low rating (under 3★)</option>
         </select>
       </div>
 

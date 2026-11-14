@@ -49,6 +49,11 @@ const providerSchema = new mongoose.Schema(
     // Reason shown to the provider when rejected or suspended
     rejectionReason: { type: String, trim: true },
     approvedAt: Date,
+    // Kept in sync from visible reviews (utils/ratings.js)
+    rating: {
+      average: { type: Number, default: null },
+      count: { type: Number, default: 0 },
+    },
     // Audit trail of admin decisions and provider resubmissions, newest last
     history: {
       type: [
