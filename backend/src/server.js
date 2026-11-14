@@ -13,6 +13,16 @@ for (const name of ['MONGO_URI', 'JWT_SECRET']) {
   }
 }
 
+// Anyone who knows the secret can forge a login for any account, so a guessable one is refused
+if (process.env.JWT_SECRET === 'change-me' || process.env.JWT_SECRET.length < 32) {
+  console.error(
+    'JWT_SECRET is too weak. Generate one with:\n' +
+      '  node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"\n' +
+      'and paste it into backend/.env',
+  );
+  process.exit(1);
+}
+
 try {
   await connectDB(MONGO_URI);
   app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
