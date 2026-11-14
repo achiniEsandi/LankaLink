@@ -45,8 +45,23 @@ const providerSchema = new mongoose.Schema(
       mimeType: String,
       updatedAt: Date,
     },
-    status: { type: String, enum: PROVIDER_STATUSES, default: 'pending' },
+    status: { type: String, enum: PROVIDER_STATUSES, default: 'pending', index: true },
+    // Reason shown to the provider when rejected or suspended
     rejectionReason: { type: String, trim: true },
+    approvedAt: Date,
+    // Audit trail of admin decisions and provider resubmissions, newest last
+    history: {
+      type: [
+        {
+          _id: false,
+          action: { type: String, required: true },
+          reason: String,
+          by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+          at: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
   },
   { timestamps: true },
 );

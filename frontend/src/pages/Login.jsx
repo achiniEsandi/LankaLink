@@ -7,6 +7,7 @@ import PasswordInput from '../components/PasswordInput'
 
 const HOME_BY_ROLE = {
   provider: '/provider/dashboard',
+  admin: '/admin/providers',
 }
 
 export default function Login() {

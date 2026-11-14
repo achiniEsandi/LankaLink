@@ -97,6 +97,13 @@ export async function uploadMyDocument(req, res) {
     await deleteFile(folder, previous.storedName);
   }
 
+  // A provider who was asked for changes goes back into the review queue once they upload again
+  if (provider.status === 'rejected') {
+    provider.status = 'pending';
+    provider.history.push({ action: 'resubmitted', reason: DOCUMENT_TYPES[type].label, at: new Date() });
+    await provider.save();
+  }
+
   res.status(201).json({ document: doc });
 }
 

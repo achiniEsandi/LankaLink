@@ -80,6 +80,16 @@ npm run dev
 >
 > `npm test` in `backend/` uses a temporary in-memory MongoDB, so tests never touch the Atlas data.
 
+## Admin accounts
+
+Admins cannot sign up on the website. Create one from `backend/` (it uses the Atlas database in `backend/.env`):
+
+```bash
+npm run create-admin -- admin@example.com "Admin Name"
+```
+
+A random password is printed once. Running it again for the same email resets the password. Admins log in on the normal login page and land on **Providers**, where they review documents, approve or send back applications, and suspend, reactivate or remove providers.
+
 ## Branches
 
 - `main` — stable, submission-ready code

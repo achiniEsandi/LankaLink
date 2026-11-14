@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import multer from 'multer';
 import { uploadErrorMessage } from './middleware/upload.js';
+import adminRoutes from './routes/admin.js';
 import authRoutes from './routes/auth.js';
 import healthRoutes from './routes/health.js';
 import providerRoutes from './routes/providers.js';
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/providers', providerRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });

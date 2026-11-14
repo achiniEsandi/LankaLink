@@ -71,5 +71,9 @@ export const PERIODS = {
 
 export const PHOTO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
+export const REQUIRED_DOCUMENT_TYPES = Object.entries(DOCUMENT_TYPES)
+  .filter(([, t]) => t.required)
+  .map(([type]) => type);
+
 export const DOCUMENT_MAX_BYTES = 5 * 1024 * 1024;
 export const DOCUMENT_MAX_CERTIFICATES = 5;

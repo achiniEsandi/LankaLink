@@ -8,6 +8,8 @@ import ProviderDashboard from './pages/ProviderDashboard'
 import ProviderDocuments from './pages/ProviderDocuments'
 import ProviderProfileEdit from './pages/ProviderProfileEdit'
 import ProviderPublicProfile from './pages/ProviderPublicProfile'
+import AdminProviderDetail from './pages/admin/AdminProviderDetail'
+import AdminProviders from './pages/admin/AdminProviders'
 import ProviderRegister from './pages/ProviderRegister'
 import './App.css'
 
@@ -25,6 +27,7 @@ function Header() {
           <>
             <span className="nav__user">{user.name.split(' ')[0]}</span>
             {user.role === 'provider' && <NavLink to="/provider/dashboard">My account</NavLink>}
+            {user.role === 'admin' && <NavLink to="/admin/providers">Providers</NavLink>}
             <button
               type="button"
               className="link-btn"
@@ -81,6 +84,22 @@ function App() {
             }
           />
           <Route path="/providers/:id" element={<ProviderPublicProfile />} />
+          <Route
+            path="/admin/providers"
+            element={
+              <RequireRole role="admin">
+                <AdminProviders />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/providers/:id"
+            element={
+              <RequireRole role="admin">
+                <AdminProviderDetail />
+              </RequireRole>
+            }
+          />
           <Route path="*" element={<p className="muted">Page not found.</p>} />
         </Routes>
       </main>
