@@ -1,9 +1,14 @@
 import cors from 'cors';
 import express from 'express';
 import mongoose from 'mongoose';
+import multer from 'multer';
+import { uploadErrorMessage } from './middleware/upload.js';
+import adminRoutes from './routes/admin.js';
 import authRoutes from './routes/auth.js';
+import bookingRoutes from './routes/bookings.js';
 import healthRoutes from './routes/health.js';
 import providerRoutes from './routes/providers.js';
+import reviewRoutes from './routes/reviews.js';
 
 const app = express();
 
@@ -13,6 +18,9 @@ app.use(express.json());
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/providers', providerRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' });
@@ -26,12 +34,17 @@ app.use((err, req, res, next) => {
   if (err.code === 11000) {
     return res.status(409).json({ message: `${Object.keys(err.keyValue ?? {}).join(', ') || 'Value'} already exists` });
   }
+  if (err instanceof multer.MulterError) {
+    const { status, message } = uploadErrorMessage(err);
+    return res.status(status).json({ message });
+  }
   if (err.type === 'entity.parse.failed') {
     return res.status(400).json({ message: 'Invalid JSON body' });
   }
 
   const status = err.status || 500;
   if (status >= 500) console.error(err);
+  if (err.retryAfter) res.set('Retry-After', String(err.retryAfter));
   res.status(status).json({
     message: status >= 500 ? 'Internal server error' : err.message,
     ...(err.details && { details: err.details }),

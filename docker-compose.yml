@@ -1,24 +1,14 @@
 services:
-  mongo:
-    image: mongo:8.0
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-
   backend:
     build: ./backend
-    depends_on:
-      - mongo
     ports:
       - "${BACKEND_PORT:-5000}:5000"
+    # MONGO_URI (MongoDB Atlas), JWT_SECRET etc. come from backend/.env, never from this file
+    env_file:
+      - ./backend/.env
     environment:
       PORT: 5000
-      MONGO_URI: mongodb://mongo:27017/lankalink
       CLIENT_URL: http://localhost:${FRONTEND_PORT:-5173}
-      JWT_SECRET: ${JWT_SECRET:-dev-only-secret-change-me}
-      JWT_EXPIRES_IN: 7d
       CHOKIDAR_USEPOLLING: "true"
     volumes:
       - ./backend:/app
@@ -37,6 +27,3 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-
-volumes:
-  mongo-data:

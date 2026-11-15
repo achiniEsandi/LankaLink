@@ -2,11 +2,15 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
+import { CircleCheck } from 'lucide-react'
 import Field from '../components/Field'
+import HomeScene from '../components/illustrations/HomeScene'
 import PasswordInput from '../components/PasswordInput'
 
 const HOME_BY_ROLE = {
+  customer: '/bookings',
   provider: '/provider/dashboard',
+  admin: '/admin/providers',
 }
 
 export default function Login() {
@@ -31,16 +35,18 @@ export default function Login() {
       signIn(token, user)
       navigate(location.state?.from || HOME_BY_ROLE[user.role] || '/', { replace: true })
     } catch (err) {
-      setError(err.status === 401 ? 'That email and password do not match. Please try again.' : err.message)
+      // The server explains lockouts and remaining attempts, so show its message as is
+      setError(err.message)
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <div className="auth">
+    <div className="auth-split">
+      <div className="auth">
       <h1>Log in</h1>
-      <p className="muted">Welcome back.</p>
+      <p className="muted">Welcome back to LankaLink.</p>
       <form onSubmit={handleSubmit} noValidate>
         <Field label="Email address">
           {(p) => (
@@ -64,6 +70,22 @@ export default function Login() {
       <p className="auth__alt">
         New here? <Link to="/provider/register">Sign up to work with LankaLink</Link>
       </p>
+      </div>
+
+      <aside className="auth-aside" aria-hidden="true">
+        <HomeScene />
+        <ul>
+          <li>
+            <CircleCheck size={18} /> Track your application and documents
+          </li>
+          <li>
+            <CircleCheck size={18} /> Update your work, areas and availability
+          </li>
+          <li>
+            <CircleCheck size={18} /> Get job requests near you once verified
+          </li>
+        </ul>
+      </aside>
     </div>
   )
 }
