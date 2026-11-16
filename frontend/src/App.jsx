@@ -1,5 +1,5 @@
 import { LogOut, MapPin } from 'lucide-react'
-import { Suspense, lazy, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { HOME_BY_ROLE } from './auth/homeByRole'
 import RequireRole from './auth/RequireRole'
@@ -16,6 +16,7 @@ import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
 import MyBookings from './pages/MyBookings'
 import ProviderJobs from './pages/ProviderJobs'
+import Operations from './pages/operations/Operations'
 import AdminBookings from './pages/admin/AdminBookings'
 import Professionals from './pages/Professionals'
 import Login from './pages/Login'
@@ -34,9 +35,6 @@ import ProviderRegister from './pages/ProviderRegister'
 import ResetPassword from './pages/ResetPassword'
 import Services from './pages/Services'
 import './App.css'
-
-// Ahmed's analytics, GPS and evidence preview: loaded only when opened, with its own styles
-const OperationsHub = lazy(() => import('./pages/operations/OperationsHub'))
 
 function Header() {
   const { user, signOut } = useAuth()
@@ -57,12 +55,13 @@ function Header() {
           {user ? (
             <>
               {user.role === 'admin' && (
-                <>
+                // Scrolls sideways on narrow screens so every admin page stays reachable
+                <span className="nav__group">
                   <NavLink to="/admin/providers">Providers</NavLink>
                   <NavLink to="/admin/bookings">Bookings</NavLink>
                   <NavLink to="/operations">Operations</NavLink>
                   <NavLink to="/admin/reviews">Reviews</NavLink>
-                </>
+                </span>
               )}
               {user.role === 'provider' && (
                 <NavLink to="/provider/jobs" className="nav__hide-sm">
@@ -118,19 +117,6 @@ function Header() {
 const customerOnly = (page) => <RequireRole role="customer">{page}</RequireRole>
 
 function App() {
-  const { pathname } = useLocation()
-
-  // The operations preview is a full-screen dashboard with its own navigation
-  if (pathname.startsWith('/operations')) {
-    return (
-      <RequireRole role="admin">
-        <Suspense fallback={<p className="muted">Loading…</p>}>
-          <OperationsHub />
-        </Suspense>
-      </RequireRole>
-    )
-  }
-
   return (
     <>
       <ScrollManager />
@@ -214,6 +200,14 @@ function App() {
             element={
               <RequireRole role="admin">
                 <AdminBookings />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/operations"
+            element={
+              <RequireRole role="admin">
+                <Operations />
               </RequireRole>
             }
           />

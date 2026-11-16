@@ -1,2 +1,3 @@
 # Secrets for docker compose (SMTP password etc.); share privately, never commit
-.env
+config.bat
+node_modules
