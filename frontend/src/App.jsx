@@ -1,18 +1,25 @@
 import { LogOut, MapPin } from 'lucide-react'
 import { Suspense, lazy, useEffect } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router'
+import { HOME_BY_ROLE } from './auth/homeByRole'
 import RequireRole from './auth/RequireRole'
 import { useAuth } from './auth/useAuth'
 import Logo from './components/Logo'
 import SiteFooter from './components/SiteFooter'
 import BookService from './pages/BookService'
 import BookingDetail from './pages/BookingDetail'
+import CustomerDashboard from './pages/CustomerDashboard'
+import CustomerProfile from './pages/CustomerProfile'
+import CustomerRegister from './pages/CustomerRegister'
+import FamilyMemberForm from './pages/FamilyMemberForm'
+import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
 import MyBookings from './pages/MyBookings'
 import ProviderJobs from './pages/ProviderJobs'
 import AdminBookings from './pages/admin/AdminBookings'
 import Professionals from './pages/Professionals'
 import Login from './pages/Login'
+import PropertyForm from './pages/PropertyForm'
 import ProviderDashboard from './pages/ProviderDashboard'
 import ProviderDocuments from './pages/ProviderDocuments'
 import ProviderProfileEdit from './pages/ProviderProfileEdit'
@@ -24,6 +31,8 @@ import AdminReviews from './pages/admin/AdminReviews'
 import AdminProviderDetail from './pages/admin/AdminProviderDetail'
 import AdminProviders from './pages/admin/AdminProviders'
 import ProviderRegister from './pages/ProviderRegister'
+import ResetPassword from './pages/ResetPassword'
+import Services from './pages/Services'
 import './App.css'
 
 // Ahmed's analytics, GPS and evidence preview: loaded only when opened, with its own styles
@@ -32,7 +41,7 @@ const OperationsHub = lazy(() => import('./pages/operations/OperationsHub'))
 function Header() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
-  const home = { admin: '/admin/providers', provider: '/provider/dashboard', customer: '/bookings' }[user?.role] ?? null
+  const home = HOME_BY_ROLE[user?.role] ?? null
 
   return (
     <header className="header">
@@ -91,9 +100,9 @@ function Header() {
             </>
           ) : (
             <>
-              <a href="/#services" className="nav__hide-sm">
+              <NavLink to="/services" className="nav__hide-sm">
                 Services
-              </a>
+              </NavLink>
               <NavLink to="/professionals">For professionals</NavLink>
               <NavLink to="/login" className="btn btn--ink btn--small">
                 Log in
@@ -105,6 +114,8 @@ function Header() {
     </header>
   )
 }
+
+const customerOnly = (page) => <RequireRole role="customer">{page}</RequireRole>
 
 function App() {
   const { pathname } = useLocation()
@@ -129,6 +140,18 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/professionals" element={<Professionals />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/services" element={<Services />} />
+
+          <Route path="/signup" element={<CustomerRegister />} />
+          <Route path="/customer/dashboard" element={customerOnly(<CustomerDashboard />)} />
+          <Route path="/customer/profile" element={customerOnly(<CustomerProfile />)} />
+          <Route path="/customer/properties/new" element={customerOnly(<PropertyForm />)} />
+          <Route path="/customer/properties/:id" element={customerOnly(<PropertyForm />)} />
+          <Route path="/customer/family/new" element={customerOnly(<FamilyMemberForm />)} />
+          <Route path="/customer/family/:id" element={customerOnly(<FamilyMemberForm />)} />
+
           <Route path="/provider/register" element={<ProviderRegister />} />
           <Route
             path="/provider/dashboard"

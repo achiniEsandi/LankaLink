@@ -1,17 +1,12 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
+import { HOME_BY_ROLE } from '../auth/homeByRole'
 import { useAuth } from '../auth/useAuth'
 import { CircleCheck } from 'lucide-react'
 import Field from '../components/Field'
 import HomeScene from '../components/illustrations/HomeScene'
 import PasswordInput from '../components/PasswordInput'
-
-const HOME_BY_ROLE = {
-  customer: '/bookings',
-  provider: '/provider/dashboard',
-  admin: '/admin/providers',
-}
 
 export default function Login() {
   const navigate = useNavigate()
@@ -58,6 +53,9 @@ export default function Login() {
             <PasswordInput {...p} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
           )}
         </Field>
+        <p className="auth__forgot">
+          <Link to="/forgot-password">Forgot your password?</Link>
+        </p>
         {error && (
           <p className="alert alert--error" role="alert">
             {error}
@@ -67,22 +65,31 @@ export default function Login() {
           {submitting ? 'Logging in…' : 'Log in'}
         </button>
       </form>
-      <p className="auth__alt">
-        New here? <Link to="/provider/register">Sign up to work with LankaLink</Link>
-      </p>
+      <div className="auth__alt">
+        <p>
+          New here?{' '}
+          <Link to="/signup" state={location.state}>
+            Create a customer account
+          </Link>
+        </p>
+        <p className="muted small">
+          Looking for work? <Link to="/provider/register">Sign up as a service provider</Link>
+        </p>
+      </div>
       </div>
 
+      {/* The login is shared, so speak to families abroad and providers alike */}
       <aside className="auth-aside" aria-hidden="true">
         <HomeScene />
         <ul>
           <li>
-            <CircleCheck size={18} /> Track your application and documents
+            <CircleCheck size={18} /> Book verified help for your home and family
           </li>
           <li>
-            <CircleCheck size={18} /> Update your work, areas and availability
+            <CircleCheck size={18} /> See check-ins, photos and a report after every visit
           </li>
           <li>
-            <CircleCheck size={18} /> Get job requests near you once verified
+            <CircleCheck size={18} /> Providers: track your application and job requests
           </li>
         </ul>
       </aside>
