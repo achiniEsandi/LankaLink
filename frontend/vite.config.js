@@ -1,11 +1,9 @@
-import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Tailwind is only used by the operations preview (see src/pages/operations/operations.css)
-  plugins: [react(), tailwindcss()],
+  plugins: [react()],
   server: {
     host: true,
     port: 5173,
