@@ -1,0 +1,48 @@
+import { Router } from 'express';
+import {
+  deleteMyDocument,
+  downloadMyDocument,
+  listMyDocuments,
+  uploadMyDocument,
+} from '../controllers/documentController.js';
+import {
+  deleteMyPhoto,
+  getMyPhoto,
+  getMyProfile,
+  getPublicPhoto,
+  getPublicProfile,
+  updateMyProfile,
+  uploadMyPhoto,
+} from '../controllers/profileController.js';
+import { getRegistrationOptions, registerProvider } from '../controllers/providerController.js';
+import { listMyReviews, listProviderReviews, replyToReview } from '../controllers/reviewController.js';
+import { protect, requireRole } from '../middleware/auth.js';
+import { documentUpload } from '../middleware/upload.js';
+
+const router = Router();
+const providerOnly = [protect, requireRole('provider')];
+
+router.get('/options', getRegistrationOptions);
+router.post('/register', registerProvider);
+
+router.get('/me', providerOnly, getMyProfile);
+router.patch('/me', providerOnly, updateMyProfile);
+
+router.get('/me/photo', providerOnly, getMyPhoto);
+router.post('/me/photo', providerOnly, documentUpload, uploadMyPhoto);
+router.delete('/me/photo', providerOnly, deleteMyPhoto);
+
+router.get('/me/documents', providerOnly, listMyDocuments);
+router.post('/me/documents', providerOnly, documentUpload, uploadMyDocument);
+router.get('/me/documents/:id/file', providerOnly, downloadMyDocument);
+router.delete('/me/documents/:id', providerOnly, deleteMyDocument);
+
+router.get('/me/reviews', providerOnly, listMyReviews);
+router.post('/me/reviews/:reviewId/reply', providerOnly, replyToReview);
+
+// Public pages for customers; /me routes above take precedence
+router.get('/:id/public', getPublicProfile);
+router.get('/:id/photo', getPublicPhoto);
+router.get('/:id/reviews', listProviderReviews);
+
+export default router;

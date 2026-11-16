@@ -1,0 +1,288 @@
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router'
+import { api } from '../api/client'
+import { useAuth } from '../auth/useAuth'
+import { BriefcaseBusiness, Pencil, Star, UserCheck } from 'lucide-react'
+import { DocumentsSpot, VerifiedSpot } from '../components/illustrations/Spots'
+import Avatar from '../components/provider/Avatar'
+import VerifyEmailBanner from '../components/provider/VerifyEmailBanner'
+import { summariseAvailability } from '../lib/availability'
+import { experienceLabel } from '../lib/provider'
+import useMyPhoto from '../lib/useMyPhoto'
+import { SERVICE_ICONS } from '../lib/serviceIcons'
+
+function documentsStep(verified, docs) {
+  const step = { title: 'Upload your documents' }
+  if (verified) return { ...step, text: 'Approved.', state: 'done' }
+
+  const rejected = docs?.documents.filter((d) => d.status === 'rejected').length ?? 0
+  if (rejected) {
+    return {
+      ...step,
+      text: `${rejected === 1 ? 'One document needs' : `${rejected} documents need`} a new upload. We have said why next to it.`,
+      state: 'current',
+      action: { label: 'Fix my documents', to: '/provider/documents' },
+    }
+  }
+  if (docs?.complete) {
+    return {
+      ...step,
+      text: 'All required documents uploaded. You can still add certificates.',
+      state: 'done',
+      action: { label: 'View my documents', to: '/provider/documents', ghost: true },
+    }
+  }
+
+  const required = docs?.types.filter((t) => t.required) ?? []
+  const done = required.length - (docs?.missing.length ?? required.length)
+  const stillNeeded = required.filter((t) => docs?.missing.includes(t.value)).map((t) => t.label)
+  return {
+    ...step,
+    text: done
+      ? `${done} of ${required.length} uploaded. Still needed: ${stillNeeded.join(', ')}.`
+      : 'A clear photo of your NIC (both sides) and your police clearance report.',
+    state: 'current',
+    action: { label: done ? 'Continue uploading' : 'Upload documents', to: '/provider/documents' },
+  }
+}
+
+// Where the provider is in the journey from sign-up to receiving jobs
+function journeyFor(status, docs) {
+  const verified = status === 'approved'
+  const docsStep = documentsStep(verified, docs)
+  return [
+    { title: 'Create your account', text: 'Done. Thank you for signing up.', state: 'done' },
+    docsStep,
+    {
+      title: 'We check your details',
+      text: 'Usually within 2 working days. We may call you to confirm a few things.',
+      state: verified ? 'done' : docsStep.state === 'done' ? 'current' : 'todo',
+    },
+    {
+      title: 'Start receiving jobs',
+      text: 'Job requests from customers in your districts appear on your jobs page.',
+      state: verified ? 'current' : 'todo',
+      ...(verified && { action: { to: '/provider/jobs', label: 'Open my jobs' } }),
+    },
+  ]
+}
+
+const STATUS_LABEL = {
+  pending: 'In review',
+  approved: 'Verified',
+  rejected: 'Needs changes',
+  suspended: 'Paused',
+}
+
+const STATUS_NOTICE = {
+  rejected: {
+    tone: 'error',
+    title: 'Some details need fixing',
+    text: 'Please update the items below and send your application again.',
+  },
+  suspended: {
+    tone: 'error',
+    title: 'Your account is paused',
+    text: 'You will not receive new jobs for now. Call us on 070 267 8393 if you think this is a mistake.',
+  },
+}
+
+export default function ProviderDashboard() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { token, signOut } = useAuth()
+  const [data, setData] = useState(null)
+  const [labels, setLabels] = useState({})
+  const [docs, setDocs] = useState(null)
+  const [error, setError] = useState(null)
+  const [jobs, setJobs] = useState(null)
+  const photoUrl = useMyPhoto(token, data?.provider.hasPhoto ? data.provider.photo.updatedAt : null)
+
+  useEffect(() => {
+    api('/providers/me', { token })
+      .then(setData)
+      .catch((err) => {
+        if (err.status === 401) {
+          signOut()
+          navigate('/login', { replace: true })
+        } else {
+          setError(err.message)
+        }
+      })
+    api('/providers/options')
+      .then((o) => setLabels(Object.fromEntries(o.services.map((s) => [s.value, s.label]))))
+      .catch(() => {})
+    api('/providers/me/documents', { token })
+      .then(setDocs)
+      .catch(() => {})
+    api('/bookings/jobs', { token })
+      .then(setJobs)
+      .catch(() => {})
+  }, [token, signOut, navigate])
+
+  if (error) return <p className="alert alert--error">{error}</p>
+  if (!data) return <p className="muted">Loading your account…</p>
+
+  const { user, provider } = data
+  const firstName = user.name.split(' ')[0]
+  const notice = STATUS_NOTICE[provider.status]
+  const journey = journeyFor(provider.status, docs)
+  const nudges = [
+    !provider.hasPhoto && 'Add a profile photo so customers can recognise you',
+    !provider.availability?.length && 'Set the days and times you can work',
+    !provider.bio && 'Write a short introduction for customers',
+  ].filter(Boolean)
+  // Five things make a complete profile: the three above plus services and districts
+  const profilePercent = Math.round(((5 - nudges.length) / 5) * 100)
+  const required = docs?.types.filter((t) => t.required).length ?? 3
+  const uploaded = required - (docs?.missing.length ?? required)
+
+  return (
+    <div className="dashboard">
+      <header className="dashboard__head">
+        <div>
+          <h1>{location.state?.justRegistered ? `Welcome to LankaLink, ${firstName}` : `Hello, ${firstName}`}</h1>
+          <p className="muted">
+            {provider.status === 'approved'
+              ? 'Your account is verified.'
+              : 'Your application is in progress. Here is what happens next.'}
+          </p>
+        </div>
+        <div className="dashboard__art">{provider.status === 'approved' ? <VerifiedSpot /> : <DocumentsSpot />}</div>
+      </header>
+
+      <div className="stat-cards">
+        <div className="stat-card">
+          <span className="stat-card__icon" aria-hidden="true">
+            <UserCheck size={20} />
+          </span>
+          <p className="stat-card__label">Application</p>
+          <p className="stat-card__value">{STATUS_LABEL[provider.status]}</p>
+          <p className="stat-card__sub">
+            {provider.status === 'approved' ? 'You can receive jobs' : `Documents ${uploaded} of ${required} uploaded`}
+          </p>
+        </div>
+        <Link to="/provider/profile" className="stat-card stat-card--link">
+          <span className="stat-card__icon" aria-hidden="true">
+            <Pencil size={20} />
+          </span>
+          <p className="stat-card__label">Profile</p>
+          <p className="stat-card__value">{profilePercent}% complete</p>
+          <span className="meter" aria-hidden="true">
+            <span className="meter__fill" style={{ width: `${profilePercent}%` }} />
+          </span>
+        </Link>
+        <Link to="/provider/jobs" className="stat-card stat-card--link">
+          <span className="stat-card__icon" aria-hidden="true">
+            <BriefcaseBusiness size={20} />
+          </span>
+          <p className="stat-card__label">Jobs</p>
+          <p className="stat-card__value">
+            {jobs?.requests.length ? `${jobs.requests.length} new request${jobs.requests.length === 1 ? '' : 's'}` : `${jobs?.upcoming.length ?? 0} upcoming`}
+          </p>
+          <p className="stat-card__sub">{jobs ? `${jobs.past.length} completed · See all` : 'See your jobs'}</p>
+        </Link>
+        <Link to="/provider/reviews" className="stat-card stat-card--link">
+          <span className="stat-card__icon" aria-hidden="true">
+            <Star size={20} />
+          </span>
+          <p className="stat-card__label">Rating</p>
+          <p className="stat-card__value">
+            {provider.rating?.count ? `${provider.rating.average.toFixed(1)} ★` : 'No reviews yet'}
+          </p>
+          <p className="stat-card__sub">
+            {provider.rating?.count
+              ? `${provider.rating.count} review${provider.rating.count === 1 ? '' : 's'} · See all`
+              : 'Reviews appear after confirmed jobs'}
+          </p>
+        </Link>
+      </div>
+
+      {!user.emailVerified && <VerifyEmailBanner email={user.email} token={token} />}
+
+      {notice && (
+        <div className={`alert alert--${notice.tone}`} role="status">
+          <strong>{notice.title}</strong>
+          <p>{notice.text}</p>
+          {provider.rejectionReason && <p>Reason: {provider.rejectionReason}</p>}
+        </div>
+      )}
+
+      <div className="dashboard__grid">
+        <section className="panel">
+          <h2 className="panel__title">Your application</h2>
+          <ol className="journey">
+            {journey.map((s, i) => (
+              <li key={s.title} className={`journey__step journey__step--${s.state}`}>
+                <span className="journey__marker" aria-hidden="true">{s.state === 'done' ? '✓' : i + 1}</span>
+                <div>
+                  <p className="journey__title">
+                    {s.title}
+                    {s.state === 'current' && <span className="tag">Next</span>}
+                  </p>
+                  <p className="journey__text">{s.text}</p>
+                  {s.action && (
+                    <Link to={s.action.to} className={`btn btn--small ${s.action.ghost ? 'btn--ghost' : 'btn--primary'}`}>
+                      {s.action.label}
+                    </Link>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="panel">
+          <div className="profile-head">
+            <Avatar src={photoUrl} name={user.name} size={56} />
+            <div className="profile-head__text">
+              <h2 className="panel__title">Your profile</h2>
+              <p className="muted small">{user.name}</p>
+            </div>
+            <Link to="/provider/profile" className="btn btn--ghost btn--small">
+              <Pencil size={14} aria-hidden="true" /> Edit
+            </Link>
+          </div>
+
+          {nudges.length > 0 && (
+            <ul className="nudges">
+              {nudges.map((n) => (
+                <li key={n}>
+                  <Link to="/provider/profile">{n}</Link>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <dl className="profile">
+            <dt>Mobile</dt>
+            <dd>{user.phone}</dd>
+            <dt>Work</dt>
+            <dd className="service-list">
+              {provider.services.map((s) => {
+                const Icon = SERVICE_ICONS[s]
+                return (
+                  <span key={s} className="service-chip">
+                    {Icon && <Icon size={15} aria-hidden="true" />}
+                    {labels[s] ?? s}
+                  </span>
+                )
+              })}
+            </dd>
+            <dt>Experience</dt>
+            <dd>{experienceLabel(provider.experienceYears)}</dd>
+            <dt>Districts</dt>
+            <dd>{provider.serviceAreas.join(', ')}</dd>
+            <dt>Available</dt>
+            <dd>{summariseAvailability(provider.availability) ?? <span className="muted">Not set yet</span>}</dd>
+          </dl>
+          {provider.status === 'approved' && (
+            <Link to={`/providers/${provider._id}`} className="link-btn">
+              View your public profile
+            </Link>
+          )}
+        </section>
+      </div>
+    </div>
+  )
+}
