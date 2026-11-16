@@ -260,12 +260,7 @@ export default function AdminProviderDetail() {
       {['pending', 'rejected'].includes(provider.status) && !canApprove && (
         <p className="muted small">
           Before approving:{' '}
-          {[
-            missingApprovals.length && `approve ${missingApprovals.map((t) => t.label).join(', ')}`,
-            !user.emailVerified && 'the provider must confirm their email address',
-          ]
-            .filter(Boolean)
-            .join('; ')}
+          {`approve ${missingApprovals.map((t) => t.label).join(', ')}`}
           .
         </p>
       )}

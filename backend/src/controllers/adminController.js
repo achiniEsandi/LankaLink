@@ -102,7 +102,7 @@ export async function listProviders(req, res) {
         photoVersion: p.photo?.updatedAt?.getTime() ?? null,
         createdAt: p.createdAt,
         documents: summary,
-        readyForReview: p.status === 'pending' && readyForReview(summary) && Boolean(p.user?.emailVerified),
+        readyForReview: p.status === 'pending' && readyForReview(summary),
         rating: p.rating,
         lowRated: isLowRated(p.rating),
       };
@@ -131,10 +131,9 @@ export async function getProvider(req, res) {
     documents,
     documentTypes: Object.entries(DOCUMENT_TYPES).map(([value, t]) => ({ value, ...t })),
     summary,
-    canApprove:
-      ['pending', 'rejected'].includes(provider.status) &&
-      summary.approved === summary.required &&
-      Boolean(provider.user?.emailVerified),
+    // Approval depends only on the required documents. Email confirmation is shown to admins but
+    // not required, because verification emails are not being sent yet.
+    canApprove: ['pending', 'rejected'].includes(provider.status) && summary.approved === summary.required,
   });
 }
 
@@ -163,9 +162,6 @@ export async function reviewDocument(req, res) {
 export async function approveProvider(req, res) {
   const provider = await findProvider(req.params.id);
   if (!['pending', 'rejected'].includes(provider.status)) throw httpError(409, `This provider is already ${provider.status}`);
-
-  const user = await User.findById(provider.user).select('emailVerified');
-  if (!user?.emailVerified) throw httpError(409, 'This provider has not confirmed their email address yet');
 
   const docs = await ProviderDocument.find({ provider: provider._id, type: { $in: REQUIRED_DOCUMENT_TYPES }, status: 'approved' });
   const missing = REQUIRED_DOCUMENT_TYPES.filter((type) => !docs.some((d) => d.type === type));

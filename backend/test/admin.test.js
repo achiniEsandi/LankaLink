@@ -134,21 +134,27 @@ describe('verification', () => {
     assert.equal(pub.status, 200);
   });
 
-  it('will not approve a provider whose email is not confirmed', async () => {
+  it('approves on documents alone, even if the email is not confirmed yet', async () => {
     const { token, id } = await registerProvider({ verified: false });
-    await approveDocs(await uploadAll(token));
+    const ids = await uploadAll(token);
 
+    // Unconfirmed email is shown to the admin, but only the documents decide
+    const before = await admin('get', `/providers/${id}`);
+    assert.equal(before.body.user.emailVerified, false);
+    assert.equal(before.body.canApprove, false);
+    assert.equal((await admin('post', `/providers/${id}/approve`)).status, 409);
+
+    await approveDocs(ids);
     const detail = await admin('get', `/providers/${id}`);
-    assert.equal(detail.body.canApprove, false);
-    assert.equal(detail.body.user.emailVerified, false);
-
-    const res = await admin('post', `/providers/${id}/approve`);
-    assert.equal(res.status, 409);
-    assert.match(res.body.message, /email/);
+    assert.equal(detail.body.canApprove, true);
 
     const list = await admin('get', '/providers?status=pending');
     assert.equal(list.body.providers[0].emailVerified, false);
-    assert.equal(list.body.providers[0].readyForReview, false);
+    assert.equal(list.body.providers[0].readyForReview, true);
+
+    const res = await admin('post', `/providers/${id}/approve`);
+    assert.equal(res.status, 200);
+    assert.equal(res.body.provider.status, 'approved');
   });
 
   it('requires a reason to reject a document and shows it to the provider', async () => {
