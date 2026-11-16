@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
 import Field from '../components/Field'
@@ -23,6 +23,7 @@ function validate(form) {
 
 export default function CustomerRegister() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { signIn } = useAuth()
   const { data: options, error: optionsError } = useOptions('/customers/options')
   const [form, setForm] = useState(EMPTY_FORM)
@@ -57,7 +58,9 @@ export default function CustomerRegister() {
         },
       })
       signIn(token, user)
-      navigate('/customer/dashboard', { replace: true, state: { justRegistered: true } })
+      // Came from a "Book" button: carry on to the booking form
+      if (location.state?.from) navigate(location.state.from, { replace: true })
+      else navigate('/customer/dashboard', { replace: true, state: { justRegistered: true } })
     } catch (err) {
       if (err.details) setErrors(err.details)
       else if (err.status === 409) setErrors({ email: 'An account with this email already exists. Try logging in.' })
@@ -150,7 +153,10 @@ export default function CustomerRegister() {
         </form>
 
         <p className="muted small">
-          Already have an account? <Link to="/login">Log in</Link>
+          Already have an account?{' '}
+          <Link to="/login" state={location.state}>
+            Log in
+          </Link>
         </p>
       </section>
     </div>

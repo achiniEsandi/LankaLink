@@ -1,0 +1,107 @@
+/* Styles for the operations preview (Ahmed's analytics, GPS and evidence screens).
+   Tailwind is loaded for this page only, and kept from leaking into the rest of the site:
+   - no global preflight reset (the main site relies on its own base styles)
+   - utilities are generated only from this folder's files
+   - everything sits in cascade layers, so the main site's unlayered CSS always wins there */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+
+@source './';
+
+@theme {
+  --font-display: 'Outfit', system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+/* A minimal reset, scoped to the preview instead of Tailwind's global preflight */
+@layer base {
+  .ops-root {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    color-scheme: dark;
+  }
+
+  .ops-root *,
+  .ops-root ::before,
+  .ops-root ::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+  }
+
+  .ops-root :is(h1, h2, h3, h4, .font-display) {
+    font-family: var(--font-display);
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  .ops-root a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  .ops-root :is(button, input, select, textarea) {
+    font: inherit;
+    color: inherit;
+    background-color: transparent;
+    border-radius: 0;
+  }
+
+  .ops-root :is(button, [role='button']) {
+    cursor: pointer;
+  }
+
+  .ops-root :is(ul, ol) {
+    list-style: none;
+  }
+
+  .ops-root :is(img, svg, video, canvas) {
+    display: block;
+    vertical-align: middle;
+  }
+
+  .ops-root :is(img, video) {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* The main site's unlayered element styles (index.css) would beat the layered utilities
+   above, so hand those properties back to the layers inside the preview. */
+.ops-root :is(h1, h2, h3) {
+  line-height: revert-layer;
+  letter-spacing: revert-layer;
+  font-weight: revert-layer;
+}
+
+.ops-root a {
+  color: revert-layer;
+  text-underline-offset: revert-layer;
+}
+
+.ops-root img {
+  max-width: revert-layer;
+}
+
+/* Subtle glass scrollbars inside the preview */
+.ops-root ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ops-root ::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.ops-root ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.24);
+  border-radius: 9999px;
+}
+
+.ops-root ::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.45);
+}
