@@ -1,5 +1,5 @@
 import { LogOut, MapPin } from 'lucide-react'
-import { useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { Link, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router'
 import RequireRole from './auth/RequireRole'
 import { useAuth } from './auth/useAuth'
@@ -26,6 +26,9 @@ import AdminProviders from './pages/admin/AdminProviders'
 import ProviderRegister from './pages/ProviderRegister'
 import './App.css'
 
+// Ahmed's analytics, GPS and evidence preview: loaded only when opened, with its own styles
+const OperationsHub = lazy(() => import('./pages/operations/OperationsHub'))
+
 function Header() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
@@ -48,6 +51,7 @@ function Header() {
                 <>
                   <NavLink to="/admin/providers">Providers</NavLink>
                   <NavLink to="/admin/bookings">Bookings</NavLink>
+                  <NavLink to="/operations">Operations</NavLink>
                   <NavLink to="/admin/reviews">Reviews</NavLink>
                 </>
               )}
@@ -103,6 +107,19 @@ function Header() {
 }
 
 function App() {
+  const { pathname } = useLocation()
+
+  // The operations preview is a full-screen dashboard with its own navigation
+  if (pathname.startsWith('/operations')) {
+    return (
+      <RequireRole role="admin">
+        <Suspense fallback={<p className="muted">Loading…</p>}>
+          <OperationsHub />
+        </Suspense>
+      </RequireRole>
+    )
+  }
+
   return (
     <>
       <ScrollManager />
