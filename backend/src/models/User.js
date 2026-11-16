@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
-import { ROLES } from '../constants/index.js';
+import { COUNTRY_CODES, LANGUAGES, ROLES } from '../constants/index.js';
 
 export const VERIFY_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 export const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
@@ -22,6 +22,15 @@ const userSchema = new mongoose.Schema(
       expiresAt: { type: Date, select: false },
       lastSentAt: { type: Date, select: false },
     },
+
+    // Customer details (customers live abroad)
+    country: { type: String, uppercase: true, trim: true, enum: COUNTRY_CODES },
+    preferredLanguage: { type: String, enum: LANGUAGES, default: 'en' },
+    timeZone: { type: String, trim: true },
+
+    // Forgot password: only a hash of the emailed token is stored
+    passwordResetTokenHash: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
   },
   { timestamps: true },
 );
@@ -50,6 +59,8 @@ userSchema.set('toJSON', {
   transform: (doc, ret) => {
     delete ret.password;
     delete ret.emailVerification;
+    delete ret.passwordResetTokenHash;
+    delete ret.passwordResetExpires;
     delete ret.__v;
     return ret;
   },
