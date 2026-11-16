@@ -22,8 +22,7 @@ export default function VerifyEmailBanner({ email, token }) {
       <div className="verify-banner__text">
         <strong>Confirm your email address</strong>
         <p>
-          We sent a link to <strong>{email}</strong>. Open it to confirm this is your email. We can only approve your
-          application after that.
+          We sent a link to <strong>{email}</strong>. Open it to confirm this is your email.
         </p>
         {state?.ok && <p className="verify-banner__ok">{state.ok}</p>}
         {state?.error && <p className="field__error">{state.error}</p>}
