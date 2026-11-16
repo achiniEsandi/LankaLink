@@ -1,84 +1,37 @@
-/* Design system: clean white app-style layout (inspired by Urban Company),
-   bold near-black type, black call-to-action buttons, LankaLink green as accent. */
-:root {
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --sunken: #f5f5f5;
-  --text: #0f0f0f;
-  --muted: #5e5e5e;
-  --border: #e6e6e6;
-  --border-strong: #d0d0d0;
-  --primary: #0a7a5a;
-  --primary-hover: #086649;
-  --primary-soft: #e8f4ef;
-  --primary-text: #ffffff;
-  /* Black buttons, the main call to action */
-  --ink: #0f0f0f;
-  --ink-hover: #2a2a2a;
-  --ink-text: #ffffff;
-  --accent: #e0891b;
-  --accent-soft: #fdf1e1;
-  --star: #f5a623;
-  --error: #c62828;
-  --error-soft: #fdecec;
-  --radius: 12px;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.18);
+@import "tailwindcss";
 
-  /* Illustration palette */
-  --il-sky: #e6efe9;
-  --il-ground: #e6ddcd;
-  --il-wall: #fbf2e2;
-  --il-roof: #c4623a;
-  --il-roof-dark: #9f4b2b;
-  --il-pillar: #ffffff;
-  --il-window: #a3cbdb;
-  --il-step: #cfc4b1;
-  --il-trunk: #8a6243;
-  --il-trunk-dark: #6b4a31;
-  --il-leaf: #2f7d5b;
-  --il-leaf-2: #55a273;
-  --il-skin: #a8694a;
-  --il-hair: #2b211c;
-  --il-pants: #3d4b5c;
-  --il-line: #2b302d;
-  --il-paper: #ffffff;
-  --il-bar: #e3dacb;
-
-  font-family: 'Segoe UI', system-ui, -apple-system, Roboto, 'Noto Sans Sinhala', 'Noto Sans Tamil', sans-serif;
-  font-size: 16px;
-  line-height: 1.55;
-  color: var(--text);
-  background: var(--bg);
-  color-scheme: light;
+@theme {
+  --font-display: "Outfit", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color-scheme: dark;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+  }
 }
 
-body {
-  margin: 0;
-  background: var(--bg);
+/* Custom subtle glass scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-h1,
-h2,
-h3 {
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  font-weight: 700;
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.35);
 }
 
-img {
-  max-width: 100%;
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.24);
+  border-radius: 9999px;
 }
 
-a {
-  color: var(--primary);
-  text-underline-offset: 2px;
-}
-
-:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.45);
 }
