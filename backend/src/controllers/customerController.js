@@ -14,6 +14,7 @@ import Property from '../models/Property.js';
 import User from '../models/User.js';
 import httpError from '../utils/httpError.js';
 import { signToken } from '../utils/token.js';
+import { sendVerificationEmail } from '../utils/verificationEmail.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // International format with country code, e.g. +447700900123
@@ -92,7 +93,18 @@ export async function registerCustomer(req, res) {
     timeZone: body.timeZone,
   });
 
-  res.status(201).json({ token: signToken(user), user });
+  // Same as provider sign-up: a failed email must not lose the account; they can resend later
+  let emailSent = true;
+  try {
+    const token = user.issueEmailVerification();
+    await user.save();
+    await sendVerificationEmail(user, token);
+  } catch (err) {
+    emailSent = false;
+    console.error('Verification email failed:', err.message);
+  }
+
+  res.status(201).json({ token: signToken(user), user, emailSent });
 }
 
 export function getMe(req, res) {

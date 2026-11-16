@@ -3,8 +3,94 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
+import BookingChip from '../components/bookings/BookingChip'
 import { JobsSpot } from '../components/illustrations/Spots'
+import { formatDay, PERIOD_HOURS } from '../lib/bookings'
 import { labelOf, mapsLink, useOptions } from '../lib/customer'
+import { useServiceLabels } from '../lib/useServiceLabels'
+
+const DASHBOARD_LIMIT = 3
+
+function BookingRow({ booking, serviceLabels }) {
+  return (
+    <li className="item item--booking">
+      <span className="item__icon" aria-hidden="true">
+        <CalendarDays size={18} />
+      </span>
+      <div className="item__body">
+        <p className="item__title">{serviceLabels[booking.service] ?? booking.service}</p>
+        <p className="item__meta">
+          {formatDay(booking.date)} · {PERIOD_HOURS[booking.period] ?? booking.period}
+          {booking.location?.label && ` · ${booking.location.label}`}
+        </p>
+        <BookingChip status={booking.status} />
+      </div>
+      <div className="item__actions">
+        <Link to={`/bookings/${booking._id}`} className="btn btn--ghost btn--small">
+          {['completed', 'confirmed'].includes(booking.status) ? 'Visit report' : 'Details'}
+        </Link>
+      </div>
+    </li>
+  )
+}
+
+// Upcoming and past visits from the booking module, each linking to its detail and visit report
+function BookingsPanel({ token }) {
+  const serviceLabels = useServiceLabels()
+  const [lists, setLists] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    Promise.all([api('/bookings?scope=upcoming', { token }), api('/bookings?scope=past', { token })])
+      .then(([upcoming, past]) =>
+        setLists({
+          // Finished jobs waiting for the customer's confirmation come first
+          upcoming: [...upcoming.awaitingConfirmation, ...upcoming.bookings],
+          past: past.bookings,
+        }),
+      )
+      .catch((err) => setError(err.message))
+  }, [token])
+
+  const section = (title, items, emptyText) => (
+    <>
+      <h3 className="panel__subtitle">{title}</h3>
+      {items.length ? (
+        <ul className="items">
+          {items.slice(0, DASHBOARD_LIMIT).map((b) => (
+            <BookingRow key={b._id} booking={b} serviceLabels={serviceLabels} />
+          ))}
+        </ul>
+      ) : (
+        <p className="muted small">{emptyText}</p>
+      )}
+    </>
+  )
+
+  return (
+    <section className="panel">
+      <div className="panel__head">
+        <h2 className="panel__title">Your bookings</h2>
+        <Link to="/book" className="btn btn--primary btn--small">
+          Book a visit
+        </Link>
+      </div>
+      {error && <p className="field__error">{error}</p>}
+      {!lists && !error && <p className="muted small">Loading bookings…</p>}
+      {lists && (
+        <>
+          {section('Upcoming', lists.upcoming, 'No upcoming visits.')}
+          {section('Past', lists.past, 'Finished visits and their reports will show here.')}
+          {(lists.upcoming.length > DASHBOARD_LIMIT || lists.past.length > DASHBOARD_LIMIT) && (
+            <p className="small">
+              <Link to="/bookings">See all bookings</Link>
+            </p>
+          )}
+        </>
+      )}
+    </section>
+  )
+}
 
 function sriLankaTime() {
   return new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Colombo', hour: 'numeric', minute: '2-digit', hour12: true }).format(
@@ -189,22 +275,7 @@ export default function CustomerDashboard() {
         </div>
 
         <div className="stack">
-          {/* Bookings and visit reports appear here once the booking module (Salpitikorala) and reports (Ahmed) land */}
-          <section className="panel">
-            <h2 className="panel__title">Your bookings</h2>
-            <div className="empty">
-              <CalendarDays size={28} aria-hidden="true" />
-              <p>
-                <strong>No bookings yet</strong>
-              </p>
-              <p className="muted small">
-                Upcoming and past visits will show here, with a link to the visit report and photos for each one.
-              </p>
-              <Link to="/services" className="btn btn--primary btn--small">
-                Browse services
-              </Link>
-            </div>
-          </section>
+          <BookingsPanel token={token} />
 
           <section className="panel">
             <div className="panel__head">

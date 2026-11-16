@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { api } from '../api/client'
 import { useAuth } from '../auth/useAuth'
+import { Stars } from '../components/reviews/Stars'
 import { experienceLabel } from '../lib/provider'
 import { formatRupees } from '../lib/customer'
 import { SERVICE_ICONS } from '../lib/serviceIcons'
@@ -34,13 +35,18 @@ function ProviderList({ service, district }) {
         <li key={p.id} className="provider-row">
           <div>
             <p className="provider-row__name">
-              {p.name}
+              <Link to={`/providers/${p.id}`}>{p.name}</Link>
               {p.verified && (
                 <span className="verified">
                   <BadgeCheck size={15} aria-hidden="true" /> Verified
                 </span>
               )}
             </p>
+            {p.rating && (
+              <p className="provider-row__rating small">
+                <Stars value={p.rating.average} size={14} /> {p.rating.average.toFixed(1)} ({p.rating.count})
+              </p>
+            )}
             <p className="muted small">
               {experienceLabel(p.experienceYears)} experience · Works in {p.serviceAreas.join(', ')}
             </p>
@@ -137,6 +143,9 @@ export default function Services() {
                 {isOpen ? 'Hide providers' : 'See providers'}
               </button>
               {isOpen && <ProviderList service={s.value} district={district} />}
+              <Link to={`/book?service=${s.value}`} className="btn btn--primary btn--small service-card__book">
+                Book {s.label.toLowerCase()}
+              </Link>
             </li>
           )
         })}
@@ -165,15 +174,13 @@ export default function Services() {
         </div>
       </section>
 
-      <section className="home__providers services__cta">
+      <section className="panel services__cta">
         {user?.role === 'customer' ? (
           <>
             <h2>Ready when you are</h2>
-            <p className="muted">
-              Add your homes and family on your account. Booking opens soon, and you will be able to book from here.
-            </p>
-            <Link to="/customer/dashboard" className="btn btn--primary">
-              Go to my account
+            <p className="muted">Choose a service above, or book from your account where your homes and family are saved.</p>
+            <Link to="/book" className="btn btn--primary">
+              Book a visit
             </Link>
           </>
         ) : (

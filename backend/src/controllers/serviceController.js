@@ -64,7 +64,7 @@ export async function listProviders(req, res) {
 
   const providers = await Provider.find(approvedFilter(filters))
     .populate('user', 'name')
-    .sort({ experienceYears: -1, createdAt: 1 })
+    .sort({ 'rating.average': -1, experienceYears: -1, createdAt: 1 })
     .limit(50);
 
   res.json(
@@ -77,6 +77,7 @@ export async function listProviders(req, res) {
         serviceAreas: p.serviceAreas,
         experienceYears: p.experienceYears,
         bio: p.bio,
+        rating: p.rating?.count ? { average: p.rating.average, count: p.rating.count } : null,
         verified: true,
       })),
   );

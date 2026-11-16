@@ -12,6 +12,10 @@ const { default: Provider } = await import('../src/models/Provider.js');
 const { default: Property } = await import('../src/models/Property.js');
 const { default: FamilyMember } = await import('../src/models/FamilyMember.js');
 const { testOutbox } = await import('../src/utils/mailer.js');
+const { clearAllLimits } = await import('../src/utils/rateLimiter.js');
+
+// Sign-up also sends a verification email, so pick out the reset one
+const resetToken = () => testOutbox.find((m) => /reset your/i.test(m.subject)).text.match(/token=([a-f0-9]+)/)[1];
 
 const validCustomer = {
   name: 'Kamala Silva',
@@ -57,6 +61,7 @@ after(async () => {
 
 beforeEach(async () => {
   testOutbox.length = 0;
+  clearAllLimits();
   await Promise.all([
     User.deleteMany({}),
     Provider.deleteMany({}),
@@ -97,6 +102,12 @@ describe('POST /api/customers/register', () => {
     assert.equal(res.body.user.phone, '+447700900123');
     assert.equal(res.body.user.country, 'GB');
     assert.equal(res.body.user.password, undefined);
+    assert.equal(res.body.user.emailVerified, false);
+    assert.equal(res.body.emailSent, true);
+
+    const mail = testOutbox.find((m) => /confirm your email/i.test(m.subject));
+    assert.equal(mail.to, 'kamala@example.com');
+    assert.match(mail.text, /booking updates/);
   });
 
   it('rejects invalid fields with per-field messages', async () => {
@@ -165,12 +176,13 @@ describe('forgot and reset password', () => {
 
     const forgot = await request(app).post('/api/auth/forgot-password').send({ email: 'KAMALA@example.com' });
     assert.equal(forgot.status, 200);
-    assert.equal(testOutbox.length, 1);
-    const token = testOutbox[0].text.match(/token=([a-f0-9]+)/)[1];
+    const token = resetToken();
 
     const reset = await request(app).post('/api/auth/reset-password').send({ token, password: 'newsecret1' });
     assert.equal(reset.status, 200);
     assert.ok(reset.body.token);
+    // The link came to their inbox, so the address is now confirmed
+    assert.equal(reset.body.user.emailVerified, true);
 
     const oldLogin = await request(app).post('/api/auth/login').send({ email: 'kamala@example.com', password: 'secret123' });
     assert.equal(oldLogin.status, 401);
@@ -187,10 +199,22 @@ describe('forgot and reset password', () => {
     assert.equal(testOutbox.length, 0);
   });
 
+  it('stops sending after 3 requests an hour without changing the reply', async () => {
+    await signUp();
+    testOutbox.length = 0;
+
+    for (let i = 0; i < 5; i++) {
+      const res = await request(app).post('/api/auth/forgot-password').send({ email: 'kamala@example.com' });
+      assert.equal(res.status, 200);
+      assert.match(res.body.message, /If an account exists/);
+    }
+    assert.equal(testOutbox.length, 3);
+  });
+
   it('rejects an expired link', async () => {
     await signUp();
     await request(app).post('/api/auth/forgot-password').send({ email: 'kamala@example.com' });
-    const token = testOutbox[0].text.match(/token=([a-f0-9]+)/)[1];
+    const token = resetToken();
     await User.updateOne({}, { passwordResetExpires: new Date(Date.now() - 1000) });
 
     const res = await request(app).post('/api/auth/reset-password').send({ token, password: 'newsecret1' });

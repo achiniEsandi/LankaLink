@@ -1,4 +1,3 @@
-import { CircleCheck } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { api } from '../api/client'
@@ -6,8 +5,8 @@ import { useAuth } from '../auth/useAuth'
 import Field from '../components/Field'
 import { SignUpSpot } from '../components/illustrations/Spots'
 import PasswordInput from '../components/PasswordInput'
-import { EXPERIENCE_OPTIONS, experienceLabel, normaliseNic, normalisePhone } from '../lib/provider'
-import { SERVICE_ICONS } from '../lib/serviceIcons'
+import { DistrictPicker, ExperiencePicker, ServicePicker } from '../components/provider/Pickers'
+import { experienceLabel, normaliseNic, normalisePhone } from '../lib/provider'
 
 // Mirrors the backend checks so most mistakes are caught before submitting
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -148,50 +147,11 @@ function DetailsStep({ form, errors, update }) {
   )
 }
 
-function WorkStep({ form, errors, update, toggle, setForm, services }) {
+function WorkStep({ form, errors, update, setValue, services }) {
   return (
     <>
-      <fieldset className="group" aria-describedby={errors.services ? 'services-error' : undefined}>
-        <legend className="group__label">What work can you do?</legend>
-        <p className="group__hint">Choose everything you are comfortable doing. You can change this later.</p>
-        <div className="tiles">
-          {services.map((s) => {
-            const Icon = SERVICE_ICONS[s.value]
-            return (
-              <label key={s.value} className={`tile${form.services.includes(s.value) ? ' tile--on' : ''}`}>
-                <input type="checkbox" checked={form.services.includes(s.value)} onChange={toggle('services', s.value)} />
-                {Icon && (
-                  <span className="tile__icon" aria-hidden="true">
-                    <Icon size={20} />
-                  </span>
-                )}
-                {form.services.includes(s.value) && <CircleCheck className="tile__tick" size={22} aria-hidden="true" />}
-                <span className="tile__title">{s.label}</span>
-                <span className="tile__text">{s.description}</span>
-              </label>
-            )
-          })}
-        </div>
-        {errors.services && <p id="services-error" className="field__error">{errors.services}</p>}
-      </fieldset>
-
-      <fieldset className="group">
-        <legend className="group__label">How long have you done this kind of work?</legend>
-        <div className="pills" role="radiogroup">
-          {EXPERIENCE_OPTIONS.map((o) => (
-            <label key={o.value} className={`pill${form.experienceYears === o.value ? ' pill--on' : ''}`}>
-              <input
-                type="radio"
-                name="experience"
-                checked={form.experienceYears === o.value}
-                onChange={() => setForm((f) => ({ ...f, experienceYears: o.value }))}
-              />
-              {o.label}
-            </label>
-          ))}
-        </div>
-        {errors.experienceYears && <p className="field__error">{errors.experienceYears}</p>}
-      </fieldset>
+      <ServicePicker services={services} value={form.services} onChange={setValue('services')} error={errors.services} />
+      <ExperiencePicker value={form.experienceYears} onChange={setValue('experienceYears')} error={errors.experienceYears} />
 
       <Field
         label="Tell customers a little about yourself"
@@ -210,78 +170,15 @@ function WorkStep({ form, errors, update, toggle, setForm, services }) {
   )
 }
 
-function AreasStep({ form, errors, toggle, setForm, provinces, launchDistricts }) {
-  const [query, setQuery] = useState('')
-  const q = query.trim().toLowerCase()
-
-  const visible = provinces
-    .map((p) => ({ ...p, districts: p.districts.filter((d) => d.toLowerCase().includes(q)) }))
-    .filter((p) => p.districts.length)
-
-  const setProvince = (districts, on) =>
-    setForm((f) => ({
-      ...f,
-      serviceAreas: on
-        ? [...new Set([...f.serviceAreas, ...districts])]
-        : f.serviceAreas.filter((d) => !districts.includes(d)),
-    }))
-
+function AreasStep({ form, errors, setValue, provinces, launchDistricts }) {
   return (
-    <>
-      <p className="note">
-        We are starting in <strong>{launchDistricts.join(' and ')}</strong>, so most jobs will be there at first.
-        Only choose districts you can travel to easily.
-      </p>
-
-      {form.serviceAreas.length > 0 && (
-        <div className="chips" aria-label="Selected districts">
-          {form.serviceAreas.map((d) => (
-            <button key={d} type="button" className="chip" onClick={toggle('serviceAreas', d)} aria-label={`Remove ${d}`}>
-              {d} <span aria-hidden="true">×</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className="field">
-        <label htmlFor="district-search" className="field__label">Find a district</label>
-        <input
-          id="district-search"
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Type a district name"
-          className="input--short"
-        />
-      </div>
-
-      <div className="provinces">
-        {visible.map((p) => {
-          const allOn = p.districts.every((d) => form.serviceAreas.includes(d))
-          return (
-            <fieldset key={p.name} className="province">
-              <div className="province__head">
-                <legend>{p.name}</legend>
-                {!q && (
-                  <button type="button" className="link-btn" onClick={() => setProvince(p.districts, !allOn)}>
-                    {allOn ? 'Clear' : 'Select all'}
-                  </button>
-                )}
-              </div>
-              {p.districts.map((d) => (
-                <label key={d} className="check">
-                  <input type="checkbox" checked={form.serviceAreas.includes(d)} onChange={toggle('serviceAreas', d)} />
-                  {d}
-                  {launchDistricts.includes(d) && <span className="tag">Most jobs</span>}
-                </label>
-              ))}
-            </fieldset>
-          )
-        })}
-        {!visible.length && <p className="muted">No district matches "{query}".</p>}
-      </div>
-      {errors.serviceAreas && <p className="field__error">{errors.serviceAreas}</p>}
-    </>
+    <DistrictPicker
+      provinces={provinces}
+      launchDistricts={launchDistricts}
+      value={form.serviceAreas}
+      onChange={setValue('serviceAreas')}
+      error={errors.serviceAreas}
+    />
   )
 }
 
@@ -374,11 +271,8 @@ export default function ProviderRegister() {
     if (errors[field]) setErrors(({ [field]: _removed, ...rest }) => rest)
   }
 
-  const toggle = (field, value) => () => {
-    setForm((f) => ({
-      ...f,
-      [field]: f[field].includes(value) ? f[field].filter((v) => v !== value) : [...f[field], value],
-    }))
+  const setValue = (field) => (value) => {
+    setForm((f) => ({ ...f, [field]: value }))
     if (errors[field]) setErrors(({ [field]: _removed, ...rest }) => rest)
   }
 
@@ -440,8 +334,7 @@ export default function ProviderRegister() {
     form,
     errors,
     update,
-    toggle,
-    setForm,
+    setValue,
     services: options?.services ?? [],
     provinces: options?.provinces ?? [],
     launchDistricts: options?.launchDistricts ?? [],
